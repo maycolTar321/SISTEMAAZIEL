@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Pagos Cuidado Aziel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; padding-bottom: 90px; }
+        .header-app { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 1.5rem 1rem; border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+        .card-stat { border: none; border-radius: 16px; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .bg-1 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .bg-2 { background: linear-gradient(135deg, #10b981, #059669); }
+        .bg-3 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .bg-4 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .card-main { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); background: white; }
+        .floating-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e2e8f0; z-index: 1050; padding: 0.5rem; }
+        .floating-nav .nav-link { color: #64748b; font-size: 0.75rem; font-weight: 600; text-align: center; border-radius: 10px; }
+        .floating-nav .nav-link.active { color: #2563eb; background: #eff6ff; }
+        .floating-nav .nav-link i { font-size: 1.25rem; display: block; }
+        @media print { .floating-nav, .no-print, .header-app { display: none !important; } body { background: white; padding: 0; } }
+    </style>
+</head>
+<body>
+
+    <div class="header-app text-center">
+        <h4 class="fw-bold mb-1"><i class="fa-solid fa-baby me-2"></i>CONTROL DE PAGOS CUIDADO AZIEL</h4>
+        <small class="text-white-50">AZIEL</small>
+    </div>
+
+    <div class="container my-4 px-3">
+        
+        <!-- Pestaña 1: Resumen -->
+        <div id="seccion-resumen" class="seccion-app">
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="card card-stat bg-1 p-3">
+                        <small class="text-uppercase fw-bold opacity-75">Tarifa / Hora</small>
+                        <h3 class="fw-bold mt-1 mb-0" id="lblTarifa">8.00 Bs.</h3>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card card-stat bg-2 p-3">
+                        <small class="text-uppercase fw-bold opacity-75">Ganado Mes</small>
+                        <h3 class="fw-bold mt-1 mb-0" id="lblGanado">0.00 Bs.</h3>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card card-stat bg-3 p-3">
+                        <small class="text-uppercase fw-bold opacity-75">Adelantos</small>
+                        <h3 class="fw-bold mt-1 mb-0" id="lblAdelantos">0.00 Bs.</h3>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card card-stat bg-4 p-3">
+                        <small class="text-uppercase fw-bold opacity-75">A Entregar</small>
+                        <h3 class="fw-bold mt-1 mb-0" id="lblTotal">0.00 Bs.</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-main p-4 mb-4">
+                <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-sliders me-2"></i>Parámetros y Control</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted small">Mes a Controlar</label>
+                        <input type="month" class="form-control" id="inputMes" onchange="actualizarTodo()">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted small">Tarifa por Hora (Bs.)</label>
+                        <input type="number" step="0.5" class="form-control" id="inputTarifaVal" value="8.00" oninput="cambiarTarifa(this.value)">
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span class="fw-bold text-secondary" id="lblTotalHoras">Total Horas: 0.00 hrs</span>
+                    <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="resetearMes()">
+                        <i class="fa-solid fa-trash-can me-1"></i> Resetear Mes Actual
+                    </button>
+                </div>
+            </div>
+
+            <div class="card card-main p-4 bg-success bg-opacity-10 border border-success border-opacity-25">
+                <h5 class="fw-bold text-success mb-2"><i class="fa-brands fa-whatsapp me-2"></i>Enviar Reporte por WhatsApp</h5>
+                <p class="text-muted small mb-3">Envía el reporte exacto del mes a los números registrados.</p>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <button class="btn btn-success w-100 fw-bold py-2" onclick="enviarWpp('77173169', 'Maycol')">
+                            <i class="fa-solid fa-paper-plane me-1"></i> A Maycol
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-success w-100 fw-bold py-2" onclick="enviarWpp('67396562', 'Esposa')">
+                            <i class="fa-solid fa-paper-plane me-1"></i> A Esposa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña 2: Registrar -->
+        <div id="seccion-registrar" class="seccion-app" style="display:none;">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card card-main p-4 h-100 border-top border-primary border-4">
+                        <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-clock-rotate-left me-2"></i>Registrar Cuidado</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">Fecha</label>
+                            <input type="date" class="form-control" id="regCFecha">
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold text-muted small">Ingreso</label>
+                                <input type="time" class="form-control" id="regCIngreso" value="08:00">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold text-muted small">Salida</label>
+                                <input type="time" class="form-control" id="regCSalida" value="16:00">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">Nota / Detalle</label>
+                            <input type="text" class="form-control" id="regCNota" placeholder="Ej. Turno normal o extra">
+                        </div>
+                        <button class="btn btn-primary w-100 fw-bold py-2" onclick="guardarCuidado()">
+                            <i class="fa-solid fa-plus me-1"></i> Guardar Cuidado
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card card-main p-4 h-100 border-top border-warning border-4">
+                        <h5 class="fw-bold text-warning mb-3"><i class="fa-solid fa-hand-holding-dollar me-2"></i>Registrar Adelanto</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">Fecha</label>
+                            <input type="date" class="form-control" id="regAFecha">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">Monto (Bs.)</label>
+                            <input type="number" step="0.5" class="form-control" id="regAMonto" placeholder="Ej. 100">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">Motivo / Detalle</label>
+                            <input type="text" class="form-control" id="regANota" placeholder="Ej. Adelanto para compras">
+                        </div>
+                        <button class="btn btn-warning w-100 fw-bold text-white py-2" onclick="guardarAdelanto()">
+                            <i class="fa-solid fa-wallet me-1"></i> Registrar Adelanto
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña 3: Historial -->
+        <div id="seccion-historial" class="seccion-app" style="display:none;">
+            <div class="card card-main p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 no-print">
+                    <h5 class="fw-bold text-primary mb-0"><i class="fa-solid fa-list-check me-2"></i>Historial de Movimientos</h5>
+                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="window.print()">
+                        <i class="fa-solid fa-print me-1"></i> Imprimir Reporte
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Detalle</th>
+                                <th>Horas</th>
+                                <th>Ganado</th>
+                                <th>Adelanto</th>
+                                <th class="no-print text-end">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCuerpo">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navegación Inferior -->
+    <div class="floating-nav">
+        <div class="row g-0 text-center">
+            <div class="col-4">
+                <a href="#" class="nav-link active" id="nav-resumen" onclick="cambiarPestaña('resumen')">
+                    <i class="fa-solid fa-chart-pie"></i> Resumen
+                </a>
+            </div>
+            <div class="col-4">
+                <a href="#" class="nav-link" id="nav-registrar" onclick="cambiarPestaña('registrar')">
+                    <i class="fa-solid fa-pen-to-square"></i> Registrar
+                </a>
+            </div>
+            <div class="col-4">
+                <a href="#" class="nav-link" id="nav-historial" onclick="cambiarPestaña('historial')">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Historial
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicialización de fechas
+        const hoy = new Date();
+        const yyyyMm = hoy.toISOString().slice(0, 7);
+        const yyyyMmDd = hoy.toISOString().split('T')[0];
+
+        document.getElementById('inputMes').value = yyyyMm;
+        document.getElementById('regCFecha').value = yyyyMmDd;
+        document.getElementById('regAFecha').value = yyyyMmDd;
+
+        let baseDatos = JSON.parse(localStorage.getItem('aziel_db_v3') || '[]');
+        let tarifaActual = parseFloat(localStorage.getItem('aziel_tarifa_v3') || '8.00');
+        document.getElementById('inputTarifaVal').value = tarifaActual.toFixed(2);
+
+        function cambiarPestaña(pestana) {
+            document.getElementById('seccion-resumen').style.display = (pestana === 'resumen') ? 'block' : 'none';
+            document.getElementById('seccion-registrar').style.display = (pestana === 'registrar') ? 'block' : 'none';
+            document.getElementById('seccion-historial').style.display = (pestana === 'historial') ? 'block' : 'none';
+
+            document.getElementById('nav-resumen').classList.toggle('active', pestana === 'resumen');
+            document.getElementById('nav-registrar').classList.toggle('active', pestana === 'registrar');
+            document.getElementById('nav-historial').classList.toggle('active', pestana === 'historial');
+            window.scrollTo(0, 0);
+        }
+
+        function cambiarTarifa(val) {
+            tarifaActual = parseFloat(val) || 0;
+            localStorage.setItem('aziel_tarifa_v3', tarifaActual);
+            actualizarTodo();
+        }
+
+        function guardarCuidado() {
+            const fecha = document.getElementById('regCFecha').value;
+            const ingreso = document.getElementById('regCIngreso').value;
+            const salida = document.getElementById('regCSalida').value;
+            const nota = document.getElementById('regCNota').value.trim() || 'Cuidado regular';
+
+            if (!fecha || !ingreso || !salida) {
+                alert('Faltan datos en el formulario.');
+                return;
+            }
+
+            const [hIn, mIn] = ingreso.split(':').map(Number);
+            const [hOut, mOut] = salida.split(':').map(Number);
+            let horas = (hOut + mOut / 60) - (hIn + mIn / 60);
+
+            if (horas <= 0) {
+                alert('La hora de salida debe ser mayor a la de ingreso.');
+                return;
+            }
+
+            baseDatos.push({
+                id: Date.now(),
+                tipo: 'Cuidado',
+                fecha: fecha,
+                detalle: `${ingreso} - ${salida} (${nota})`,
+                horas: horas,
+                ganado: horas * tarifaActual,
+                adelanto: 0
+            });
+
+            localStorage.setItem('aziel_db_v3', JSON.stringify(baseDatos));
+            document.getElementById('regCNota').value = '';
+            actualizarTodo();
+            alert('¡Guardado con éxito!');
+            cambiarPestaña('resumen');
+        }
+
+        function guardarAdelanto() {
+            const fecha = document.getElementById('regAFecha').value;
+            const monto = parseFloat(document.getElementById('regAMonto').value);
+            const nota = document.getElementById('regANota').value.trim();
+
+            if (!fecha || isNaN(monto) || monto <= 0 || !nota) {
+                alert('Por favor completa todos los campos del adelanto.');
+                return;
+            }
+
+            baseDatos.push({
+                id: Date.now(),
+                tipo: 'Adelanto',
+                fecha: fecha,
+                detalle: nota,
+                horas: 0,
+                ganado: 0,
+                adelanto: monto
+            });
+
+            localStorage.setItem('aziel_db_v3', JSON.stringify(baseDatos));
+            document.getElementById('regAMonto').value = '';
+            document.getElementById('regANota').value = '';
+            actualizarTodo();
+            alert('¡Adelanto registrado con éxito!');
+            cambiarPestaña('resumen');
+        }
+
+        function borrarItem(id) {
+            if (confirm('¿Eliminar este registro?')) {
+                baseDatos = baseDatos.filter(x => x.id !== id);
+                localStorage.setItem('aziel_db_v3', JSON.stringify(baseDatos));
+                actualizarTodo();
+            }
+        }
+
+        function resetearMes() {
+            const mesSel = document.getElementById('inputMes').value;
+            if (confirm(`¿Borrar todos los registros del mes ${mesSel}?`)) {
+                baseDatos = baseDatos.filter(x => !x.fecha || !x.fecha.startsWith(mesSel));
+                localStorage.setItem('aziel_db_v3', JSON.stringify(baseDatos));
+                actualizarTodo();
+            }
+        }
+
+        function actualizarTodo() {
+            const mesSel = document.getElementById('inputMes').value;
+            document.getElementById('lblTarifa').innerText = tarifaActual.toFixed(2) + ' Bs.';
+
+            let gTotal = 0;
+            let aTotal = 0;
+            let hTotal = 0;
+
+            const tbody = document.getElementById('tablaCuerpo');
+            tbody.innerHTML = '';
+
+            const filtrados = baseDatos.filter(x => x.fecha && x.fecha.startsWith(mesSel));
+            filtrados.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+            if (filtrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Sin registros en este mes.</td></tr>`;
+            }
+
+            filtrados.forEach(x => {
+                if (x.tipo === 'Cuidado') {
+                    const ganadoVigente = x.horas * tarifaActual;
+                    gTotal += ganadoVigente;
+                    hTotal += x.horas;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${x.fecha}</td>
+                            <td><span class="badge bg-success bg-opacity-10 text-success">Cuidado</span></td>
+                            <td>${x.detalle}</td>
+                            <td>${x.horas.toFixed(2)} hrs</td>
+                            <td class="fw-bold text-success">+${ganadoVigente.toFixed(2)} Bs.</td>
+                            <td>-</td>
+                            <td class="no-print text-end"><button class="btn btn-sm text-danger border-0" onclick="borrarItem(${x.id})"><i class="fa-solid fa-trash"></i></button></td>
+                        </tr>`;
+                } else {
+                    aTotal += x.adelanto;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${x.fecha}</td>
+                            <td><span class="badge bg-warning bg-opacity-10 text-warning">Adelanto</span></td>
+                            <td>${x.detalle}</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td class="fw-bold text-danger">-${x.adelanto.toFixed(2)} Bs.</td>
+                            <td class="no-print text-end"><button class="btn btn-sm text-danger border-0" onclick="borrarItem(${x.id})"><i class="fa-solid fa-trash"></i></button></td>
+                        </tr>`;
+                }
+            });
+
+            document.getElementById('lblGanado').innerText = gTotal.toFixed(2) + ' Bs.';
+            document.getElementById('lblAdelantos').innerText = aTotal.toFixed(2) + ' Bs.';
+            document.getElementById('lblTotal').innerText = (gTotal - aTotal).toFixed(2) + ' Bs.';
+            document.getElementById('lblTotalHoras').innerText = `Total Horas: ${hTotal.toFixed(2)} hrs`;
+        }
+
+        function enviarWpp(tel, nom) {
+            const mes = document.getElementById('inputMes').value;
+            const ganado = document.getElementById('lblGanado').innerText;
+            const adelantos = document.getElementById('lblAdelantos').innerText;
+            const total = document.getElementById('lblTotal').innerText;
+            const horas = document.getElementById('lblTotalHoras').innerText;
+
+            const txt = `Hola ${nom}, reporte de Cuidado de Aziel (${mes}):\n\n` +
+                        `⏰ ${horas}\n` +
+                        `💰 Ganado: ${ganado}\n` +
+                        `💸 Adelantos: ${adelantos}\n` +
+                        `📌 A Entregar: ${total}`;
+
+            window.open(`https://api.whatsapp.com/send?phone=591${tel}&text=${encodeURIComponent(txt)}`, '_blank');
+        }
+
+        actualizarTodo();
+    </script>
+</body>
+</html>
