@@ -29,10 +29,14 @@
     
     <!-- Inline script to prevent theme flashing on load -->
     <script>
-        if (localStorage.getItem('aziel_theme') === 'dark' || (!('aziel_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
+        try {
+            if (localStorage.getItem('aziel_theme') === 'dark' || (!('aziel_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        } catch(e) {
+            console.warn('LocalStorage blocked, using light mode');
         }
     </script>
 </head>
@@ -482,6 +486,6 @@
     <!-- TOAST NOTIFICATIONS CONTAINER -->
     <div id="toast-container" class="fixed bottom-24 md:bottom-6 right-0 left-0 md:left-auto md:right-6 flex flex-col gap-3 px-4 md:px-0 pointer-events-none items-center md:items-end"></div>
 
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/app.js?v=3.1.0"></script>
 </body>
 </html>
