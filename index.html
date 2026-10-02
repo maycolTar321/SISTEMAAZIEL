@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" class="light">
 <head>
     <meta charset="UTF-8">
@@ -120,7 +120,7 @@ body {
         }
     </script>
 </head>
-<body class="bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen transition-colors duration-300 md:flex hide-scrollbar">
+<body class="bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen transition-colors duration-300 md:flex hide-scrollbar overflow-x-hidden w-full max-w-[100vw]">
 
     <!-- DESKTOP SIDEBAR -->
     <aside class="hidden md:flex flex-col w-72 bg-white dark:bg-darkcard border-r border-slate-200 dark:border-slate-800 h-screen sticky top-0 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-colors duration-300">
@@ -199,7 +199,7 @@ body {
                     <button onclick="app.setQuickFilter('month')" class="flex-1 sm:flex-none px-4 py-2 text-xs font-extrabold rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors border border-slate-200 dark:border-slate-700">Este Mes</button>
                 </div>
                 <div class="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-                <div class="flex items-center gap-2 w-full sm:w-auto bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <div class="grid grid-cols-[1fr_auto_1fr] gap-1 md:gap-2 w-full sm:w-auto bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <input type="date" id="filterStart" class="w-full sm:w-36 text-xs font-black text-slate-700 dark:text-slate-200 bg-transparent px-2 py-1 outline-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]" onchange="app.renderAll()">
                     <div class="w-6 h-6 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm shrink-0">
                         <i class="ph-bold ph-arrow-right text-slate-400 dark:text-slate-300 text-[10px]"></i>
@@ -248,7 +248,7 @@ body {
             </div>
 
             <!-- Stats Grid -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                 <div class="bg-white dark:bg-darkcard p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm relative group transition-colors duration-300">
                     <i class="ph-duotone ph-coins text-3xl text-blue-500 mb-3 block"></i>
                     <p class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tarifa Base</p>
@@ -277,8 +277,7 @@ body {
                     <div class="shrink-0 w-12 h-12 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center">
                         <i class="ph-duotone ph-star text-2xl"></i>
                     </div>
-                    <div>
-                        <h4 class="font-extrabold text-slate-900 dark:text-white text-sm mb-1">DÃ­a MÃ¡s Productivo</h4>
+                    <div class="min-w-0 flex-1"><h4 class="font-extrabold text-slate-900 truncate dark:text-white text-sm mb-1">DÃ­a MÃ¡s Productivo</h4>
                         <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-2">El dÃ­a con mayores ingresos en este periodo.</p>
                         <p class="font-black text-lg text-slate-800 dark:text-slate-200" id="lblBestDay">N/A</p>
                     </div>
@@ -287,8 +286,7 @@ body {
                     <div class="shrink-0 w-12 h-12 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center">
                         <i class="ph-duotone ph-calculator text-2xl"></i>
                     </div>
-                    <div>
-                        <h4 class="font-extrabold text-slate-900 dark:text-white text-sm mb-1">Promedio Diario</h4>
+                    <div class="min-w-0 flex-1"><h4 class="font-extrabold text-slate-900 truncate dark:text-white text-sm mb-1">Promedio Diario</h4>
                         <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-2">Ingreso promedio por dÃ­a trabajado.</p>
                         <p class="font-black text-lg text-slate-800 dark:text-slate-200" id="lblAvgDaily">0.00 Bs/dÃ­a</p>
                     </div>
@@ -855,13 +853,12 @@ class AzielApp {
                 const itemEarned = item.hours * this.currentRate;
                 cardHtml = `
                 <div class="bg-white dark:bg-darkcard p-5 rounded-[1.5rem] shadow-sm border border-slate-200 dark:border-slate-800 relative hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md transition-all group">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center gap-4">
+                    <div class="flex justify-between items-start mb-4 gap-2">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
                             <div class="w-12 h-12 rounded-[1rem] bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                                 <i class="ph-duotone ph-clock-user text-2xl"></i>
                             </div>
-                            <div>
-                                <h4 class="font-extrabold text-slate-900 dark:text-white text-sm">Turno</h4>
+                            <div class="min-w-0 flex-1"><h4 class="font-extrabold text-slate-900 truncate dark:text-white text-sm">Turno</h4>
                                 <span class="text-[11px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">${dateNice}</span>
                             </div>
                         </div>
@@ -881,13 +878,12 @@ class AzielApp {
             } else {
                 cardHtml = `
                 <div class="bg-white dark:bg-darkcard p-5 rounded-[1.5rem] shadow-sm border border-slate-200 dark:border-slate-800 relative hover:border-orange-300 dark:hover:border-orange-500 hover:shadow-md transition-all group">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center gap-4">
+                    <div class="flex justify-between items-start mb-4 gap-2">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
                             <div class="w-12 h-12 rounded-[1rem] bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                                 <i class="ph-duotone ph-hand-coins text-2xl"></i>
                             </div>
-                            <div>
-                                <h4 class="font-extrabold text-slate-900 dark:text-white text-sm">Adelanto</h4>
+                            <div class="min-w-0 flex-1"><h4 class="font-extrabold text-slate-900 truncate dark:text-white text-sm">Adelanto</h4>
                                 <span class="text-[11px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">${dateNice}</span>
                             </div>
                         </div>
@@ -937,11 +933,11 @@ class AzielApp {
             
             let html = `
             <div class="bg-white dark:bg-darkcard p-4 rounded-[1.5rem] shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
-                <div class="flex items-center gap-4 truncate">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
                     <div class="shrink-0 w-10 h-10 rounded-xl ${isTurn ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600' : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600'} flex items-center justify-center border border-slate-100 dark:border-slate-800">
                         <i class="ph-duotone ${isTurn ? 'ph-clock-user' : 'ph-hand-coins'} text-xl"></i>
                     </div>
-                    <div class="truncate">
+                    <div class="min-w-0 flex-1 truncate">
                         <div class="flex items-center gap-2">
                             <h4 class="font-extrabold text-slate-900 dark:text-white text-sm">${isTurn ? 'Turno' : 'Adelanto'}</h4>
                             <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">${dateNice}</span>
@@ -1379,3 +1375,5 @@ if (document.readyState === 'loading') {
 </script>
 </body>
 </html>
+
+
