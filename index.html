@@ -2,391 +2,335 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Pagos Cuidado Aziel</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aziel App</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1d4ed8">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2991/2991148.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { appBlue: '#2563eb', appDark: '#1e293b' },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        body { background-color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; padding-bottom: 90px; }
-        .header-app { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 1.5rem 1rem; border-radius: 0 0 20px 20px; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
-        .card-stat { border: none; border-radius: 16px; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .bg-1 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-        .bg-2 { background: linear-gradient(135deg, #10b981, #059669); }
-        .bg-3 { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .bg-4 { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .card-main { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); background: white; }
-        .floating-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e2e8f0; z-index: 1050; padding: 0.5rem; }
-        .floating-nav .nav-link { color: #64748b; font-size: 0.75rem; font-weight: 600; text-align: center; border-radius: 10px; }
-        .floating-nav .nav-link.active { color: #2563eb; background: #eff6ff; }
-        .floating-nav .nav-link i { font-size: 1.25rem; display: block; }
-        @media print { .floating-nav, .no-print, .header-app { display: none !important; } body { background: white; padding: 0; } }
+        .nav-btn-desktop.active { opacity: 1; border-bottom: 3px solid white; padding-bottom: 1px; font-weight: 700; }
+        /* Smooth transitions for buttons */
+        button { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen pb-24 md:pb-0">
 
-    <div class="header-app text-center">
-        <h4 class="fw-bold mb-1"><i class="fa-solid fa-baby me-2"></i>CONTROL DE PAGOS CUIDADO AZIEL</h4>
-        <small class="text-white-50">AZIEL</small>
-    </div>
+    <!-- Unified Premium Header -->
+    <header class="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 text-white sticky top-0 z-50 shadow-lg shadow-blue-900/10 border-b border-blue-400/20">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            
+            <!-- Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md shadow-inner border border-white/20">
+                    <i class="ph-fill ph-baby text-2xl text-white drop-shadow-md"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg tracking-tight drop-shadow-sm">Aziel App</h1>
+                    <p class="text-[11px] text-blue-100 font-medium hidden sm:block">Control Financiero Inteligente</p>
+                </div>
+            </div>
 
-    <div class="container my-4 px-3">
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex gap-8 items-center">
+                <button onclick="switchTab('dashboard')" id="nav-desktop-dashboard" class="nav-btn-desktop active font-medium opacity-70 hover:opacity-100 text-sm flex items-center gap-2 drop-shadow-sm"><i class="ph-duotone ph-squares-four text-xl"></i> Inicio</button>
+                <button onclick="switchTab('register')" id="nav-desktop-register" class="nav-btn-desktop font-medium opacity-70 hover:opacity-100 text-sm flex items-center gap-2 drop-shadow-sm"><i class="ph-duotone ph-plus-circle text-xl"></i> Registrar</button>
+                <button onclick="switchTab('history')" id="nav-desktop-history" class="nav-btn-desktop font-medium opacity-70 hover:opacity-100 text-sm flex items-center gap-2 drop-shadow-sm"><i class="ph-duotone ph-list-dashes text-xl"></i> Historial</button>
+                <button onclick="switchTab('settings')" id="nav-desktop-settings" class="nav-btn-desktop font-medium opacity-70 hover:opacity-100 text-sm flex items-center gap-2 drop-shadow-sm"><i class="ph-duotone ph-gear text-xl"></i> Ajustes</button>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex gap-3">
+                <button onclick="window.print()" class="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors no-print text-white hidden sm:flex">
+                    <i class="ph-duotone ph-printer text-2xl"></i>
+                </button>
+                <button onclick="sendWpp()" class="px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-full shadow-lg shadow-green-500/30 active:scale-95 text-white font-bold flex items-center gap-2 text-sm border border-green-400/30">
+                    <i class="ph-fill ph-whatsapp-logo text-xl drop-shadow-sm"></i> <span class="hidden sm:inline">Enviar Reporte</span>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto p-4 md:p-6 w-full space-y-6">
         
-        <!-- Pestaña 1: Resumen -->
-        <div id="seccion-resumen" class="seccion-app">
-            <div class="row g-3 mb-4">
-                <div class="col-6 col-md-3">
-                    <div class="card card-stat bg-1 p-3">
-                        <small class="text-uppercase fw-bold opacity-75">Tarifa / Hora</small>
-                        <h3 class="fw-bold mt-1 mb-0" id="lblTarifa">8.00 Bs.</h3>
-                    </div>
+        <!-- Global Date Filter -->
+        <div class="bg-white p-3 md:p-5 rounded-[1.5rem] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-16 md:top-[76px] z-40 no-print backdrop-blur-xl bg-white/95">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100 shadow-inner">
+                    <i class="ph-duotone ph-calendar-blank text-blue-600 text-xl"></i>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="card card-stat bg-2 p-3">
-                        <small class="text-uppercase fw-bold opacity-75">Ganado Mes</small>
-                        <h3 class="fw-bold mt-1 mb-0" id="lblGanado">0.00 Bs.</h3>
-                    </div>
+                <div>
+                    <h3 class="font-extrabold text-slate-800 text-sm">Filtro de Periodo</h3>
+                    <p class="text-[11px] font-medium text-slate-400">Rango activo de reportes</p>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="card card-stat bg-3 p-3">
-                        <small class="text-uppercase fw-bold opacity-75">Adelantos</small>
-                        <h3 class="fw-bold mt-1 mb-0" id="lblAdelantos">0.00 Bs.</h3>
-                    </div>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto bg-slate-50 p-1.5 rounded-2xl border border-slate-200">
+                <input type="date" id="filterStart" class="w-full sm:w-36 text-xs font-bold text-slate-700 bg-transparent px-2 py-2 outline-none cursor-pointer" onchange="renderAll()">
+                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-200 shrink-0">
+                    <i class="ph-bold ph-arrow-right text-slate-400 text-xs"></i>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="card card-stat bg-4 p-3">
-                        <small class="text-uppercase fw-bold opacity-75">A Entregar</small>
-                        <h3 class="fw-bold mt-1 mb-0" id="lblTotal">0.00 Bs.</h3>
-                    </div>
+                <input type="date" id="filterEnd" class="w-full sm:w-36 text-xs font-bold text-slate-700 bg-transparent px-2 py-2 outline-none cursor-pointer" onchange="renderAll()">
+            </div>
+        </div>
+
+        <!-- TAB 1: DASHBOARD -->
+        <div id="view-dashboard" class="app-view space-y-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-[1.5rem] border border-slate-200 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] relative overflow-hidden group hover:border-blue-200 transition-colors">
+                    <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out z-0"></div>
+                    <i class="ph-duotone ph-coins text-3xl text-blue-600 mb-3 block relative z-10"></i>
+                    <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider relative z-10">Tarifa / Hora</p>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900 mt-1 tracking-tight relative z-10" id="lblRate">0.00 Bs.</h3>
+                </div>
+                <div class="bg-white p-5 rounded-[1.5rem] border border-slate-200 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] relative overflow-hidden group hover:border-green-200 transition-colors">
+                    <div class="absolute -right-4 -top-4 w-20 h-20 bg-green-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out z-0"></div>
+                    <i class="ph-duotone ph-trend-up text-3xl text-green-600 mb-3 block relative z-10"></i>
+                    <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider relative z-10">Total Ganado</p>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900 mt-1 tracking-tight relative z-10" id="lblEarned">0.00 Bs.</h3>
+                </div>
+                <div class="bg-white p-5 rounded-[1.5rem] border border-slate-200 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] relative overflow-hidden group hover:border-orange-200 transition-colors">
+                    <div class="absolute -right-4 -top-4 w-20 h-20 bg-orange-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out z-0"></div>
+                    <i class="ph-duotone ph-hand-coins text-3xl text-orange-600 mb-3 block relative z-10"></i>
+                    <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider relative z-10">Adelantos</p>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900 mt-1 tracking-tight relative z-10" id="lblAdvances">0.00 Bs.</h3>
+                </div>
+                <div class="bg-gradient-to-br from-blue-700 to-indigo-800 p-5 rounded-[1.5rem] shadow-lg shadow-blue-900/30 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full blur-2xl z-0"></div>
+                    <i class="ph-duotone ph-wallet text-3xl text-white/90 mb-3 block relative z-10"></i>
+                    <p class="text-[10px] font-extrabold text-blue-200 uppercase tracking-wider relative z-10">Pago Neto Final</p>
+                    <h3 class="text-2xl md:text-3xl font-black text-white mt-1 tracking-tight drop-shadow-md relative z-10" id="lblTotal">0.00 Bs.</h3>
                 </div>
             </div>
 
-            <div class="card card-main p-4 mb-4">
-                <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-sliders me-2"></i>Parámetros y Control</h5>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold text-muted small">Mes a Controlar</label>
-                        <input type="month" class="form-control" id="inputMes" onchange="actualizarTodo()">
+            <div class="bg-white p-5 md:p-6 rounded-[1.5rem] shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100">
+                <h3 class="font-extrabold text-slate-700 text-sm mb-5 flex items-center gap-2"><i class="ph-duotone ph-chart-line-up text-blue-500 text-xl"></i> Gráfica de Rendimiento</h3>
+                <div class="h-64 w-full"><canvas id="earningsChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- TAB 2: REGISTER -->
+        <div id="view-register" class="app-view hidden">
+            <div class="grid md:grid-cols-2 gap-6">
+                
+                <!-- Turn Form -->
+                <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 h-fit relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                    
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-inner">
+                            <i class="ph-duotone ph-clock-user text-2xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-black text-slate-800 text-xl tracking-tight">Nuevo Turno</h2>
+                            <p class="text-xs text-slate-400 font-medium">Registra horas de cuidado</p>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold text-muted small">Tarifa por Hora (Bs.)</label>
-                        <input type="number" step="0.5" class="form-control" id="inputTarifaVal" value="8.00" oninput="cambiarTarifa(this.value)">
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1 mb-1.5 block">Fecha de Ingreso</label>
+                            <div class="bg-slate-50/50 p-2 rounded-2xl border border-slate-200 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-500/10 transition-all shadow-sm">
+                                <input type="date" id="inputDate" class="w-full bg-transparent text-sm font-bold text-slate-700 px-3 py-1 outline-none cursor-pointer">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1 mb-1.5 block">Entrada</label>
+                                <div class="bg-slate-50/50 p-2 rounded-2xl border border-slate-200 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-500/10 transition-all shadow-sm">
+                                    <input type="time" id="inputIn" value="08:00" class="w-full bg-transparent text-sm font-bold text-slate-700 px-3 py-1 outline-none cursor-pointer">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1 mb-1.5 block">Salida</label>
+                                <div class="bg-slate-50/50 p-2 rounded-2xl border border-slate-200 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-500/10 transition-all shadow-sm">
+                                    <input type="time" id="inputOut" value="16:00" class="w-full bg-transparent text-sm font-bold text-slate-700 px-3 py-1 outline-none cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1 mb-1.5 block">Nota / Detalle</label>
+                            <div class="bg-slate-50/50 p-2 rounded-2xl border border-slate-200 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-500/10 transition-all shadow-sm">
+                                <input type="text" id="inputNote" placeholder="Ej. Horas extras, cuidado regular..." class="w-full bg-transparent text-sm font-medium text-slate-700 px-3 py-1 outline-none">
+                            </div>
+                        </div>
+                        <button onclick="saveTurn()" class="w-full mt-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/40 active:scale-[0.98] transition-all flex justify-center items-center gap-2 border border-blue-400/20">
+                            <i class="ph-bold ph-check-circle text-xl drop-shadow-sm"></i> Guardar Turno
+                        </button>
                     </div>
                 </div>
-                <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <span class="fw-bold text-secondary" id="lblTotalHoras">Total Horas: 0.00 hrs</span>
-                    <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="resetearMes()">
-                        <i class="fa-solid fa-trash-can me-1"></i> Resetear Mes Actual
+
+                <div class="space-y-6">
+                    <!-- Advance Form -->
+                    <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-400 to-amber-500"></div>
+                        
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center border border-orange-100 shadow-inner">
+                                <i class="ph-duotone ph-hand-coins text-2xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-black text-slate-800 text-xl tracking-tight">Adelanto / Dcto.</h2>
+                                <p class="text-xs text-slate-400 font-medium">Registra retiros de dinero</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-5">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="col-span-2 sm:col-span-1">
+                                    <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1 mb-1.5 block">Fecha</label>
+                                    <div class="bg-slate-50/50 p-2 rounded-2xl border border-slate-200 focus-within:border-orange-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10 transition-all shadow-sm">
+                                        <input type="date" id="advDate" class="w-full bg-transparent text-sm font-bold text-slate-700 px-3 py-1 outline-none cursor-pointer">
+                                    </div>
+                                </div>
+                                <div class="col-span-2 sm:col-span-1">
+                                    <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1 mb-1.5 block">Monto</label>
+                                    <div class="bg-slate-50/50 p-2 rounded-2xl border border-slate-200 focus-within:border-orange-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10 transition-all shadow-sm flex items-center px-3">
+                                        <span class="text-slate-400 font-black mr-2 text-sm">Bs.</span>
+                                        <input type="number" step="0.1" id="advAmount" placeholder="0.00" class="w-full bg-transparent text-sm font-bold text-slate-700 py-1 outline-none">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1 mb-1.5 block">Motivo</label>
+                                <div class="bg-slate-50/50 p-2 rounded-2xl border border-slate-200 focus-within:border-orange-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10 transition-all shadow-sm">
+                                    <input type="text" id="advNote" placeholder="Ej. Pasajes, Préstamo..." class="w-full bg-transparent text-sm font-medium text-slate-700 px-3 py-1 outline-none">
+                                </div>
+                            </div>
+                            <button onclick="saveAdvance()" class="w-full mt-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-orange-500/40 active:scale-[0.98] transition-all flex justify-center items-center gap-2 border border-orange-400/20">
+                                <i class="ph-bold ph-check-circle text-xl drop-shadow-sm"></i> Guardar Adelanto
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recent Entries inside Register Tab -->
+                    <div class="bg-blue-50/60 p-6 rounded-[2rem] border border-blue-100 shadow-sm">
+                        <h3 class="font-extrabold text-slate-800 text-sm mb-4 flex items-center gap-2"><i class="ph-duotone ph-clock-counter-clockwise text-blue-600 text-xl"></i> Agregados Recientemente</h3>
+                        <div id="miniHistory" class="space-y-3">
+                            <!-- JS Injection -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- TAB 3: HISTORY -->
+        <div id="view-history" class="app-view hidden">
+            <div class="flex justify-between items-end mb-5 px-1">
+                <div>
+                    <h2 class="font-black text-slate-800 text-xl tracking-tight">Historial Detallado</h2>
+                    <p class="text-xs text-slate-400 font-medium">Revisa o edita los registros</p>
+                </div>
+                <span class="text-xs font-bold text-blue-700 bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-full shadow-sm" id="historyCount">0 registros</span>
+            </div>
+            
+            <div id="listHistory" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- JS Injection -->
+            </div>
+        </div>
+
+        <!-- TAB 4: SETTINGS -->
+        <div id="view-settings" class="app-view hidden">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 h-fit">
+                    <h2 class="font-black text-slate-800 mb-6 flex items-center gap-3 text-lg"><i class="ph-duotone ph-sliders text-blue-500 text-2xl"></i> Ajustes Generales</h2>
+                    <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider ml-1 block mb-2">Tarifa por Hora (Bs.)</label>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="bg-slate-50/50 p-2.5 rounded-2xl border border-slate-200 flex-1 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-500/10 transition-all shadow-sm">
+                            <input type="number" step="0.5" id="configRate" class="w-full bg-transparent text-lg font-black text-slate-700 px-3 outline-none text-center sm:text-left">
+                        </div>
+                        <button onclick="saveRate()" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-white px-8 py-3 sm:py-0 rounded-2xl font-bold transition-all shadow-lg shadow-slate-800/20 active:scale-95 border border-slate-700">Guardar</button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                    <h2 class="font-black text-slate-800 mb-4 flex items-center gap-3 text-lg"><i class="ph-duotone ph-database text-indigo-500 text-2xl"></i> Respaldo de Datos</h2>
+                    <p class="text-xs font-medium text-slate-500 mb-6 leading-relaxed">Crea una copia de seguridad o restaura tu información. Los datos se guardan en tu navegador actual.</p>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="exportData()" class="flex flex-col items-center justify-center gap-2 bg-gradient-to-b from-indigo-50 to-white hover:from-indigo-100 active:bg-indigo-200 text-indigo-700 p-5 rounded-[1.5rem] font-bold text-xs border border-indigo-200 shadow-sm transition-all active:scale-95">
+                            <i class="ph-duotone ph-download-simple text-3xl text-indigo-500"></i> Exportar
+                        </button>
+                        <label class="flex flex-col items-center justify-center gap-2 bg-gradient-to-b from-slate-50 to-white hover:from-slate-100 active:bg-slate-200 text-slate-700 p-5 rounded-[1.5rem] font-bold text-xs border border-slate-200 shadow-sm transition-all active:scale-95 cursor-pointer">
+                            <i class="ph-duotone ph-upload-simple text-3xl text-slate-500"></i> Importar
+                            <input type="file" accept=".json" class="hidden" onchange="importData(event)">
+                        </label>
+                    </div>
+                    
+                    <hr class="border-slate-100 my-8">
+
+                    <button onclick="clearAllData()" class="w-full flex justify-center items-center gap-2 text-red-600 bg-red-50 hover:bg-red-100 py-4 rounded-2xl text-sm font-extrabold transition-all border border-red-100 active:scale-95">
+                        <i class="ph-fill ph-warning-circle text-lg"></i> BORRAR TODO EL SISTEMA
                     </button>
                 </div>
             </div>
-
-            <div class="card card-main p-4 bg-success bg-opacity-10 border border-success border-opacity-25">
-                <h5 class="fw-bold text-success mb-2"><i class="fa-brands fa-whatsapp me-2"></i>Enviar Reporte por WhatsApp</h5>
-                <p class="text-muted small mb-3">Envía el reporte exacto del mes a los números registrados.</p>
-                <div class="row g-2">
-                    <div class="col-6">
-                        <button class="btn btn-success w-100 fw-bold py-2" onclick="enviarWpp('77173169', 'Maycol')">
-                            <i class="fa-solid fa-paper-plane me-1"></i> A Maycol
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-success w-100 fw-bold py-2" onclick="enviarWpp('67396562', 'Esposa')">
-                            <i class="fa-solid fa-paper-plane me-1"></i> A Esposa
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
+    </main>
 
-        <!-- Pestaña 2: Registrar -->
-        <div id="seccion-registrar" class="seccion-app" style="display:none;">
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <div class="card card-main p-4 h-100 border-top border-primary border-4">
-                        <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-clock-rotate-left me-2"></i>Registrar Cuidado</h5>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Fecha</label>
-                            <input type="date" class="form-control" id="regCFecha">
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <label class="form-label fw-bold text-muted small">Ingreso</label>
-                                <input type="time" class="form-control" id="regCIngreso" value="08:00">
-                            </div>
-                            <div class="col-6 mb-3">
-                                <label class="form-label fw-bold text-muted small">Salida</label>
-                                <input type="time" class="form-control" id="regCSalida" value="16:00">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Nota / Detalle</label>
-                            <input type="text" class="form-control" id="regCNota" placeholder="Ej. Turno normal o extra">
-                        </div>
-                        <button class="btn btn-primary w-100 fw-bold py-2" onclick="guardarCuidado()">
-                            <i class="fa-solid fa-plus me-1"></i> Guardar Cuidado
-                        </button>
-                    </div>
-                </div>
-
-                <div class="col-lg-6">
-                    <div class="card card-main p-4 h-100 border-top border-warning border-4">
-                        <h5 class="fw-bold text-warning mb-3"><i class="fa-solid fa-hand-holding-dollar me-2"></i>Registrar Adelanto</h5>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Fecha</label>
-                            <input type="date" class="form-control" id="regAFecha">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Monto (Bs.)</label>
-                            <input type="number" step="0.5" class="form-control" id="regAMonto" placeholder="Ej. 100">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Motivo / Detalle</label>
-                            <input type="text" class="form-control" id="regANota" placeholder="Ej. Adelanto para compras">
-                        </div>
-                        <button class="btn btn-warning w-100 fw-bold text-white py-2" onclick="guardarAdelanto()">
-                            <i class="fa-solid fa-wallet me-1"></i> Registrar Adelanto
-                        </button>
-                    </div>
-                </div>
+    <!-- Fixed Bottom Nav (Mobile Only) -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-200/60 flex justify-around items-end pb-safe pt-2 px-2 z-50 no-print shadow-[0_-15px_40px_rgba(0,0,0,0.06)]">
+        <button onclick="switchTab('dashboard')" id="nav-mobile-dashboard" class="nav-btn-mobile flex flex-col items-center p-2 text-slate-400 hover:text-blue-600 w-[72px] group transition-colors">
+            <i class="ph-duotone ph-squares-four text-[28px] mb-1 group-[.active]:text-blue-600 group-[.active]:scale-110 transition-transform"></i>
+            <span class="text-[10px] font-bold group-[.active]:text-blue-600">Inicio</span>
+        </button>
+        <button onclick="switchTab('register')" id="nav-mobile-register" class="nav-btn-mobile flex flex-col items-center p-2 text-slate-400 hover:text-blue-600 w-[72px] group transition-colors">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-3.5 -mt-10 shadow-lg shadow-blue-600/40 mb-1 border-[4px] border-white group-[.active]:scale-110 group-[.active]:-translate-y-1 transition-all">
+                <i class="ph-bold ph-plus text-xl drop-shadow-sm"></i>
             </div>
-        </div>
+            <span class="text-[10px] font-bold group-[.active]:text-blue-600 mt-1">Registrar</span>
+        </button>
+        <button onclick="switchTab('history')" id="nav-mobile-history" class="nav-btn-mobile flex flex-col items-center p-2 text-slate-400 hover:text-blue-600 w-[72px] group transition-colors">
+            <i class="ph-duotone ph-list-dashes text-[28px] mb-1 group-[.active]:text-blue-600 group-[.active]:scale-110 transition-transform"></i>
+            <span class="text-[10px] font-bold group-[.active]:text-blue-600">Historial</span>
+        </button>
+        <button onclick="switchTab('settings')" id="nav-mobile-settings" class="nav-btn-mobile flex flex-col items-center p-2 text-slate-400 hover:text-blue-600 w-[72px] group transition-colors">
+            <i class="ph-duotone ph-gear text-[28px] mb-1 group-[.active]:text-blue-600 group-[.active]:scale-110 transition-transform"></i>
+            <span class="text-[10px] font-bold group-[.active]:text-blue-600">Ajustes</span>
+        </button>
+    </nav>
 
-        <!-- Pestaña 3: Historial -->
-        <div id="seccion-historial" class="seccion-app" style="display:none;">
-            <div class="card card-main p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 no-print">
-                    <h5 class="fw-bold text-primary mb-0"><i class="fa-solid fa-list-check me-2"></i>Historial de Movimientos</h5>
-                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="window.print()">
-                        <i class="fa-solid fa-print me-1"></i> Imprimir Reporte
-                    </button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Tipo</th>
-                                <th>Detalle</th>
-                                <th>Horas</th>
-                                <th>Ganado</th>
-                                <th>Adelanto</th>
-                                <th class="no-print text-end">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaCuerpo">
-                        </tbody>
-                    </table>
-                </div>
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex-col justify-end md:justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-t-[2rem] md:rounded-[2rem] shadow-2xl w-full max-w-md mx-auto p-6 md:p-8 transform translate-y-full md:translate-y-10 transition-transform duration-300 relative" id="editModalContent">
+            
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 md:hidden"></div>
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-black text-slate-800 tracking-tight" id="editModalTitle">Editar Registro</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors p-2.5 rounded-full"><i class="ph-bold ph-x text-lg"></i></button>
             </div>
-        </div>
-
-    </div>
-
-    <!-- Navegación Inferior -->
-    <div class="floating-nav">
-        <div class="row g-0 text-center">
-            <div class="col-4">
-                <a href="#" class="nav-link active" id="nav-resumen" onclick="cambiarPestaña('resumen')">
-                    <i class="fa-solid fa-chart-pie"></i> Resumen
-                </a>
+            
+            <div id="editFormContainer" class="space-y-5 max-h-[60vh] md:max-h-auto overflow-y-auto pb-4 pr-1">
+                <!-- Injected Form Fields -->
             </div>
-            <div class="col-4">
-                <a href="#" class="nav-link" id="nav-registrar" onclick="cambiarPestaña('registrar')">
-                    <i class="fa-solid fa-pen-to-square"></i> Registrar
-                </a>
-            </div>
-            <div class="col-4">
-                <a href="#" class="nav-link" id="nav-historial" onclick="cambiarPestaña('historial')">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Historial
-                </a>
+            
+            <div class="mt-6 flex gap-3 pb-safe md:pb-0">
+                <button onclick="closeEditModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold py-4 rounded-2xl transition-colors">Cancelar</button>
+                <button onclick="saveEdit()" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 active:scale-95 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/30 transition-all border border-blue-400/20">Guardar</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // Inicialización de fechas
-        const hoy = new Date();
-        const yyyyMm = hoy.toISOString().slice(0, 7);
-        const yyyyMmDd = hoy.toISOString().split('T')[0];
-
-        document.getElementById('inputMes').value = yyyyMm;
-        document.getElementById('regCFecha').value = yyyyMmDd;
-        document.getElementById('regAFecha').value = yyyyMmDd;
-
-        let baseDatos = JSON.parse(localStorage.getItem('aziel_db_v3') || '[]');
-        let tarifaActual = parseFloat(localStorage.getItem('aziel_tarifa_v3') || '8.00');
-        document.getElementById('inputTarifaVal').value = tarifaActual.toFixed(2);
-
-        function cambiarPestaña(pestana) {
-            document.getElementById('seccion-resumen').style.display = (pestana === 'resumen') ? 'block' : 'none';
-            document.getElementById('seccion-registrar').style.display = (pestana === 'registrar') ? 'block' : 'none';
-            document.getElementById('seccion-historial').style.display = (pestana === 'historial') ? 'block' : 'none';
-
-            document.getElementById('nav-resumen').classList.toggle('active', pestana === 'resumen');
-            document.getElementById('nav-registrar').classList.toggle('active', pestana === 'registrar');
-            document.getElementById('nav-historial').classList.toggle('active', pestana === 'historial');
-            window.scrollTo(0, 0);
-        }
-
-        function cambiarTarifa(val) {
-            tarifaActual = parseFloat(val) || 0;
-            localStorage.setItem('aziel_tarifa_v3', tarifaActual);
-            actualizarTodo();
-        }
-
-        function guardarCuidado() {
-            const fecha = document.getElementById('regCFecha').value;
-            const ingreso = document.getElementById('regCIngreso').value;
-            const salida = document.getElementById('regCSalida').value;
-            const nota = document.getElementById('regCNota').value.trim() || 'Cuidado regular';
-
-            if (!fecha || !ingreso || !salida) {
-                alert('Faltan datos en el formulario.');
-                return;
-            }
-
-            const [hIn, mIn] = ingreso.split(':').map(Number);
-            const [hOut, mOut] = salida.split(':').map(Number);
-            let horas = (hOut + mOut / 60) - (hIn + mIn / 60);
-
-            if (horas <= 0) {
-                alert('La hora de salida debe ser mayor a la de ingreso.');
-                return;
-            }
-
-            baseDatos.push({
-                id: Date.now(),
-                tipo: 'Cuidado',
-                fecha: fecha,
-                detalle: `${ingreso} - ${salida} (${nota})`,
-                horas: horas,
-                ganado: horas * tarifaActual,
-                adelanto: 0
-            });
-
-            localStorage.setItem('aziel_db_v3', JSON.stringify(baseDatos));
-            document.getElementById('regCNota').value = '';
-            actualizarTodo();
-            alert('¡Guardado con éxito!');
-            cambiarPestaña('resumen');
-        }
-
-        function guardarAdelanto() {
-            const fecha = document.getElementById('regAFecha').value;
-            const monto = parseFloat(document.getElementById('regAMonto').value);
-            const nota = document.getElementById('regANota').value.trim();
-
-            if (!fecha || isNaN(monto) || monto <= 0 || !nota) {
-                alert('Por favor completa todos los campos del adelanto.');
-                return;
-            }
-
-            baseDatos.push({
-                id: Date.now(),
-                tipo: 'Adelanto',
-                fecha: fecha,
-                detalle: nota,
-                horas: 0,
-                ganado: 0,
-                adelanto: monto
-            });
-
-            localStorage.setItem('aziel_db_v3', JSON.stringify(baseDatos));
-            document.getElementById('regAMonto').value = '';
-            document.getElementById('regANota').value = '';
-            actualizarTodo();
-            alert('¡Adelanto registrado con éxito!');
-            cambiarPestaña('resumen');
-        }
-
-        function borrarItem(id) {
-            if (confirm('¿Eliminar este registro?')) {
-                baseDatos = baseDatos.filter(x => x.id !== id);
-                localStorage.setItem('aziel_db_v3', JSON.stringify(baseDatos));
-                actualizarTodo();
-            }
-        }
-
-        function resetearMes() {
-            const mesSel = document.getElementById('inputMes').value;
-            if (confirm(`¿Borrar todos los registros del mes ${mesSel}?`)) {
-                baseDatos = baseDatos.filter(x => !x.fecha || !x.fecha.startsWith(mesSel));
-                localStorage.setItem('aziel_db_v3', JSON.stringify(baseDatos));
-                actualizarTodo();
-            }
-        }
-
-        function actualizarTodo() {
-            const mesSel = document.getElementById('inputMes').value;
-            document.getElementById('lblTarifa').innerText = tarifaActual.toFixed(2) + ' Bs.';
-
-            let gTotal = 0;
-            let aTotal = 0;
-            let hTotal = 0;
-
-            const tbody = document.getElementById('tablaCuerpo');
-            tbody.innerHTML = '';
-
-            const filtrados = baseDatos.filter(x => x.fecha && x.fecha.startsWith(mesSel));
-            filtrados.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-            if (filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Sin registros en este mes.</td></tr>`;
-            }
-
-            filtrados.forEach(x => {
-                if (x.tipo === 'Cuidado') {
-                    const ganadoVigente = x.horas * tarifaActual;
-                    gTotal += ganadoVigente;
-                    hTotal += x.horas;
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${x.fecha}</td>
-                            <td><span class="badge bg-success bg-opacity-10 text-success">Cuidado</span></td>
-                            <td>${x.detalle}</td>
-                            <td>${x.horas.toFixed(2)} hrs</td>
-                            <td class="fw-bold text-success">+${ganadoVigente.toFixed(2)} Bs.</td>
-                            <td>-</td>
-                            <td class="no-print text-end"><button class="btn btn-sm text-danger border-0" onclick="borrarItem(${x.id})"><i class="fa-solid fa-trash"></i></button></td>
-                        </tr>`;
-                } else {
-                    aTotal += x.adelanto;
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${x.fecha}</td>
-                            <td><span class="badge bg-warning bg-opacity-10 text-warning">Adelanto</span></td>
-                            <td>${x.detalle}</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td class="fw-bold text-danger">-${x.adelanto.toFixed(2)} Bs.</td>
-                            <td class="no-print text-end"><button class="btn btn-sm text-danger border-0" onclick="borrarItem(${x.id})"><i class="fa-solid fa-trash"></i></button></td>
-                        </tr>`;
-                }
-            });
-
-            document.getElementById('lblGanado').innerText = gTotal.toFixed(2) + ' Bs.';
-            document.getElementById('lblAdelantos').innerText = aTotal.toFixed(2) + ' Bs.';
-            document.getElementById('lblTotal').innerText = (gTotal - aTotal).toFixed(2) + ' Bs.';
-            document.getElementById('lblTotalHoras').innerText = `Total Horas: ${hTotal.toFixed(2)} hrs`;
-        }
-
-        function enviarWpp(tel, nom) {
-            const mes = document.getElementById('inputMes').value;
-            const ganado = document.getElementById('lblGanado').innerText;
-            const adelantos = document.getElementById('lblAdelantos').innerText;
-            const total = document.getElementById('lblTotal').innerText;
-            const horas = document.getElementById('lblTotalHoras').innerText;
-
-            const txt = `Hola ${nom}, reporte de Cuidado de Aziel (${mes}):\n\n` +
-                        `⏰ ${horas}\n` +
-                        `💰 Ganado: ${ganado}\n` +
-                        `💸 Adelantos: ${adelantos}\n` +
-                        `📌 A Entregar: ${total}`;
-
-            window.open(`https://api.whatsapp.com/send?phone=591${tel}&text=${encodeURIComponent(txt)}`, '_blank');
-        }
-
-        actualizarTodo();
-    </script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="assets/js/app.js"></script>
 </body>
 </html>
