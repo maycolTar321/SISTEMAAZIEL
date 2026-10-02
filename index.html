@@ -1,0 +1,1381 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aziel Enterprise 3.0</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2991/2991148.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { primary: '#2563eb', darkbg: '#0f172a', darkcard: '#1e293b' },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+  .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+}
+
+body {
+    overscroll-behavior-y: none;
+}
+
+/* Page Transitions */
+.app-view {
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Toast Notifications */
+#toast-container {
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.toast {
+    animation: slideInBottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.toast.fade-out {
+    animation: slideOutBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideInBottom {
+    from { opacity: 0; transform: translateY(100%) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes slideOutBottom {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(100%) scale(0.9); }
+}
+
+/* Desktop specific overrides */
+@media (min-width: 768px) {
+    .toast {
+        animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    .toast.fade-out {
+        animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(100%) scale(0.9); }
+        to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    
+    @keyframes slideOutRight {
+        from { opacity: 1; transform: translateX(0) scale(1); }
+        to { opacity: 0; transform: translateX(100%) scale(0.9); }
+    }
+}
+
+/* Custom checkmark animations for charts/UI */
+.progress-bar-fill {
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+</style>
+    
+    <!-- Inline script to prevent theme flashing on load -->
+    <script>
+        try {
+            if (localStorage.getItem('aziel_theme') === 'dark' || (!('aziel_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        } catch(e) {
+            console.warn('LocalStorage blocked, using light mode');
+        }
+    </script>
+</head>
+<body class="bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen transition-colors duration-300 md:flex hide-scrollbar">
+
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="hidden md:flex flex-col w-72 bg-white dark:bg-darkcard border-r border-slate-200 dark:border-slate-800 h-screen sticky top-0 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-colors duration-300">
+        <div class="p-6 lg:p-8 flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-[1rem] flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <i class="ph-fill ph-baby text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-black text-xl tracking-tight text-slate-900 dark:text-white">Aziel App</h1>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Enterprise</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-2 mt-4 overflow-y-auto hide-scrollbar">
+            <button onclick="app.switchTab('dashboard')" id="nav-desktop-dashboard" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all group active">
+                <i class="ph-duotone ph-squares-four text-2xl group-[.active]:text-blue-600"></i>
+                <span class="group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-black">Dashboard</span>
+            </button>
+            <button onclick="app.switchTab('register')" id="nav-desktop-register" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all group">
+                <i class="ph-duotone ph-plus-circle text-2xl group-[.active]:text-blue-600"></i>
+                <span class="group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-black">Registrar</span>
+            </button>
+            <button onclick="app.switchTab('analytics')" id="nav-desktop-analytics" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all group">
+                <i class="ph-duotone ph-chart-pie-slice text-2xl group-[.active]:text-blue-600"></i>
+                <span class="group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-black">AnalÃ­ticas</span>
+            </button>
+            <button onclick="app.switchTab('history')" id="nav-desktop-history" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all group">
+                <i class="ph-duotone ph-list-dashes text-2xl group-[.active]:text-blue-600"></i>
+                <span class="group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-black">Historial</span>
+            </button>
+            <button onclick="app.switchTab('settings')" id="nav-desktop-settings" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all group">
+                <i class="ph-duotone ph-gear text-2xl group-[.active]:text-blue-600"></i>
+                <span class="group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-black">ConfiguraciÃ³n</span>
+            </button>
+        </nav>
+
+        <div class="p-6 mt-auto">
+            <button onclick="app.toggleTheme()" class="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-sm font-bold text-slate-600 dark:text-slate-300">
+                <span>Modo Oscuro</span>
+                <i class="ph-duotone ph-moon-stars text-xl" id="desktop-theme-icon"></i>
+            </button>
+            <button onclick="app.sendWpp()" class="w-full mt-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-green-500/20 active:scale-[0.98] transition-all flex justify-center items-center gap-2">
+                <i class="ph-fill ph-whatsapp-logo text-xl"></i> Enviar Reporte
+            </button>
+        </div>
+    </aside>
+
+    <!-- MOBILE HEADER -->
+    <header class="md:hidden bg-white/90 dark:bg-darkcard/90 backdrop-blur-xl sticky top-0 z-40 border-b border-slate-200/50 dark:border-slate-800/50 px-4 py-3 flex justify-between items-center transition-colors duration-300">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+                <i class="ph-fill ph-baby text-xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-black text-base text-slate-900 dark:text-white tracking-tight">Aziel App</h1>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="app.toggleTheme()" class="w-9 h-9 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-full text-slate-500 dark:text-slate-300">
+                <i class="ph-duotone ph-moon-stars text-xl" id="mobile-theme-icon"></i>
+            </button>
+            <button onclick="app.sendWpp()" class="w-9 h-9 flex items-center justify-center bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 rounded-full">
+                <i class="ph-fill ph-whatsapp-logo text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 w-full max-w-6xl mx-auto p-4 md:p-8 lg:p-10 pb-28 md:pb-10 relative overflow-x-hidden">
+        
+        <!-- GLOBAL FILTER (Sticky on Desktop) -->
+        <div class="bg-white dark:bg-darkcard p-4 md:p-5 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-5 mb-8 sticky top-[72px] md:top-0 z-30 transition-colors duration-300">
+            <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-center">
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button onclick="app.setQuickFilter('week')" class="flex-1 sm:flex-none px-4 py-2 text-xs font-extrabold rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors border border-slate-200 dark:border-slate-700">Esta Semana</button>
+                    <button onclick="app.setQuickFilter('month')" class="flex-1 sm:flex-none px-4 py-2 text-xs font-extrabold rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors border border-slate-200 dark:border-slate-700">Este Mes</button>
+                </div>
+                <div class="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                <div class="flex items-center gap-2 w-full sm:w-auto bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <input type="date" id="filterStart" class="w-full sm:w-36 text-xs font-black text-slate-700 dark:text-slate-200 bg-transparent px-2 py-1 outline-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]" onchange="app.renderAll()">
+                    <div class="w-6 h-6 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm shrink-0">
+                        <i class="ph-bold ph-arrow-right text-slate-400 dark:text-slate-300 text-[10px]"></i>
+                    </div>
+                    <input type="date" id="filterEnd" class="w-full sm:w-36 text-xs font-black text-slate-700 dark:text-slate-200 bg-transparent px-2 py-1 outline-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]" onchange="app.renderAll()">
+                </div>
+            </div>
+            
+            <button onclick="app.exportCSV()" class="hidden lg:flex px-5 py-2.5 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl font-black text-xs items-center gap-2 transition-colors border border-indigo-200 dark:border-indigo-500/30">
+                <i class="ph-bold ph-microsoft-excel-logo text-lg"></i> Exportar Datos
+            </button>
+        </div>
+
+        <!-- TAB: DASHBOARD -->
+        <div id="view-dashboard" class="app-view space-y-8 block">
+            
+            <!-- User Greeting & Goal -->
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-gradient-to-br from-blue-600 to-indigo-700 p-6 md:p-8 rounded-[2rem] shadow-lg shadow-blue-900/20 relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute -right-10 -top-10 w-64 h-64 bg-white/10 rounded-full blur-3xl z-0 pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight drop-shadow-sm">Hola, Melissa ðŸ‘‹</h2>
+                        <p class="text-blue-200 font-medium text-sm mt-1">AquÃ­ estÃ¡ tu resumen financiero del periodo.</p>
+                    </div>
+                    <div class="relative z-10 mt-8 bg-black/20 backdrop-blur-md p-5 rounded-3xl border border-white/10">
+                        <div class="flex justify-between items-end mb-2">
+                            <div>
+                                <p class="text-[10px] font-extrabold text-blue-200 uppercase tracking-widest">Meta Mensual</p>
+                                <h4 class="text-xl font-black text-white mt-0.5"><span id="lblGoalEarned">0.00</span> / <span id="lblGoalTarget">2000</span> Bs.</h4>
+                            </div>
+                            <span class="text-sm font-black text-green-300" id="lblGoalPercent">0%</span>
+                        </div>
+                        <div class="w-full bg-white/20 h-3 rounded-full overflow-hidden mt-1 shadow-inner">
+                            <div id="goalProgressBar" class="bg-gradient-to-r from-green-400 to-emerald-300 h-full rounded-full progress-bar-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-darkcard p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-center items-center text-center transition-colors duration-300">
+                    <div class="w-20 h-20 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="ph-duotone ph-wallet text-4xl text-green-600 dark:text-green-400"></i>
+                    </div>
+                    <p class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Pago Neto Disponible</p>
+                    <h2 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight" id="lblTotal">0.00 Bs.</h2>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div class="bg-white dark:bg-darkcard p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm relative group transition-colors duration-300">
+                    <i class="ph-duotone ph-coins text-3xl text-blue-500 mb-3 block"></i>
+                    <p class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tarifa Base</p>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-0.5" id="lblRate">0.00 Bs.</h3>
+                </div>
+                <div class="bg-white dark:bg-darkcard p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm relative group transition-colors duration-300">
+                    <i class="ph-duotone ph-trend-up text-3xl text-green-500 mb-3 block"></i>
+                    <p class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Generado</p>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-0.5" id="lblEarned">0.00 Bs.</h3>
+                </div>
+                <div class="bg-white dark:bg-darkcard p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm relative group transition-colors duration-300">
+                    <i class="ph-duotone ph-hand-coins text-3xl text-orange-500 mb-3 block"></i>
+                    <p class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Adelantos</p>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-0.5" id="lblAdvances">0.00 Bs.</h3>
+                </div>
+                <div class="bg-white dark:bg-darkcard p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm relative group transition-colors duration-300">
+                    <i class="ph-duotone ph-clock text-3xl text-indigo-500 mb-3 block"></i>
+                    <p class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Horas Totales</p>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-0.5" id="lblHours">0.00 h</h3>
+                </div>
+            </div>
+
+            <!-- Smart Insights -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-darkcard p-6 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 flex items-start gap-4 transition-colors duration-300">
+                    <div class="shrink-0 w-12 h-12 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center">
+                        <i class="ph-duotone ph-star text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-slate-900 dark:text-white text-sm mb-1">DÃ­a MÃ¡s Productivo</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-2">El dÃ­a con mayores ingresos en este periodo.</p>
+                        <p class="font-black text-lg text-slate-800 dark:text-slate-200" id="lblBestDay">N/A</p>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-darkcard p-6 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 flex items-start gap-4 transition-colors duration-300">
+                    <div class="shrink-0 w-12 h-12 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center">
+                        <i class="ph-duotone ph-calculator text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-slate-900 dark:text-white text-sm mb-1">Promedio Diario</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-2">Ingreso promedio por dÃ­a trabajado.</p>
+                        <p class="font-black text-lg text-slate-800 dark:text-slate-200" id="lblAvgDaily">0.00 Bs/dÃ­a</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: REGISTER -->
+        <div id="view-register" class="app-view hidden space-y-8">
+            <div class="grid lg:grid-cols-2 gap-8">
+                
+                <!-- Turn Form -->
+                <div class="bg-white dark:bg-darkcard p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 h-fit relative overflow-hidden transition-colors duration-300">
+                    <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                    
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                            <i class="ph-duotone ph-clock-user text-2xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-black text-slate-900 dark:text-white text-xl tracking-tight">Registrar Turno</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">AÃ±ade horas de trabajo</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Fecha de Ingreso</label>
+                            <div class="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 focus-within:border-blue-500 dark:focus-within:border-blue-400 transition-all">
+                                <input type="date" id="inputDate" class="w-full bg-transparent text-sm font-bold text-slate-700 dark:text-slate-200 px-2 py-1 outline-none [color-scheme:light] dark:[color-scheme:dark]">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-5">
+                            <div>
+                                <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Hora Entrada</label>
+                                <div class="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 focus-within:border-blue-500 dark:focus-within:border-blue-400 transition-all">
+                                    <input type="time" id="inputIn" value="08:00" class="w-full bg-transparent text-sm font-bold text-slate-700 dark:text-slate-200 px-2 py-1 outline-none [color-scheme:light] dark:[color-scheme:dark]">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Hora Salida</label>
+                                <div class="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 focus-within:border-blue-500 dark:focus-within:border-blue-400 transition-all">
+                                    <input type="time" id="inputOut" value="16:00" class="w-full bg-transparent text-sm font-bold text-slate-700 dark:text-slate-200 px-2 py-1 outline-none [color-scheme:light] dark:[color-scheme:dark]">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Nota / Detalle (Opcional)</label>
+                            <div class="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 focus-within:border-blue-500 dark:focus-within:border-blue-400 transition-all">
+                                <input type="text" id="inputNote" placeholder="Ej. Horas extras..." class="w-full bg-transparent text-sm font-medium text-slate-700 dark:text-slate-200 px-2 py-1 outline-none">
+                            </div>
+                        </div>
+                        <button onclick="app.saveTurn()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all flex justify-center items-center gap-2">
+                            <i class="ph-bold ph-check-circle text-xl"></i> Guardar Turno
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <!-- Advance Form -->
+                    <div class="bg-white dark:bg-darkcard p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden transition-colors duration-300">
+                        <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-400 to-amber-500"></div>
+                        
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                                <i class="ph-duotone ph-hand-coins text-2xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-black text-slate-900 dark:text-white text-xl tracking-tight">Registrar Adelanto</h2>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Retiros o descuentos</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-2 gap-5">
+                                <div class="col-span-2 sm:col-span-1">
+                                    <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Fecha</label>
+                                    <div class="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 focus-within:border-orange-500 dark:focus-within:border-orange-400 transition-all">
+                                        <input type="date" id="advDate" class="w-full bg-transparent text-sm font-bold text-slate-700 dark:text-slate-200 px-2 py-1 outline-none [color-scheme:light] dark:[color-scheme:dark]">
+                                    </div>
+                                </div>
+                                <div class="col-span-2 sm:col-span-1">
+                                    <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Monto</label>
+                                    <div class="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 focus-within:border-orange-500 dark:focus-within:border-orange-400 transition-all flex items-center px-3">
+                                        <span class="text-slate-400 dark:text-slate-500 font-black mr-2">Bs.</span>
+                                        <input type="number" step="0.1" id="advAmount" placeholder="0.00" class="w-full bg-transparent text-sm font-bold text-slate-700 dark:text-slate-200 py-1 outline-none">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Motivo</label>
+                                <div class="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 focus-within:border-orange-500 dark:focus-within:border-orange-400 transition-all">
+                                    <input type="text" id="advNote" placeholder="Ej. Pasajes..." class="w-full bg-transparent text-sm font-medium text-slate-700 dark:text-slate-200 px-2 py-1 outline-none">
+                                </div>
+                            </div>
+                            <button onclick="app.saveAdvance()" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-orange-500/30 active:scale-[0.98] transition-all flex justify-center items-center gap-2">
+                                <i class="ph-bold ph-check-circle text-xl"></i> Guardar Adelanto
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Mini History -->
+                    <div class="bg-slate-100/50 dark:bg-slate-800/30 p-6 rounded-[2rem] border border-slate-200/60 dark:border-slate-700/50">
+                        <h3 class="font-black text-slate-800 dark:text-slate-200 text-sm mb-4 flex items-center gap-2">
+                            <i class="ph-duotone ph-clock-counter-clockwise text-blue-600 dark:text-blue-400 text-xl"></i> Historial Reciente
+                        </h3>
+                        <div id="miniHistory" class="space-y-3">
+                            <!-- JS Injection -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: ANALYTICS -->
+        <div id="view-analytics" class="app-view hidden space-y-6">
+            <h2 class="font-black text-2xl text-slate-900 dark:text-white mb-6 tracking-tight">AnÃ¡lisis y Tendencias</h2>
+            
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white dark:bg-darkcard p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 transition-colors duration-300">
+                    <h3 class="font-extrabold text-slate-800 dark:text-white text-sm mb-6 flex items-center gap-2">
+                        <i class="ph-duotone ph-chart-bar text-blue-500 text-xl"></i> Balance Diario (Ingresos vs Retiros)
+                    </h3>
+                    <div class="h-80 w-full"><canvas id="barChart"></canvas></div>
+                </div>
+                
+                <div class="bg-white dark:bg-darkcard p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 transition-colors duration-300">
+                    <h3 class="font-extrabold text-slate-800 dark:text-white text-sm mb-6 flex items-center gap-2">
+                        <i class="ph-duotone ph-chart-donut text-indigo-500 text-xl"></i> DistribuciÃ³n
+                    </h3>
+                    <div class="h-64 w-full flex justify-center"><canvas id="donutChart"></canvas></div>
+                    <div class="mt-6 flex justify-center gap-6">
+                        <div class="text-center">
+                            <div class="w-3 h-3 rounded-full bg-blue-500 mx-auto mb-1"></div>
+                            <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Ingresos</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-3 h-3 rounded-full bg-orange-500 mx-auto mb-1"></div>
+                            <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Adelantos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: HISTORY -->
+        <div id="view-history" class="app-view hidden space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-2">
+                <div>
+                    <h2 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight">Historial Detallado</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Revisa, busca o edita tus registros.</p>
+                </div>
+                <div class="flex gap-3 w-full md:w-auto">
+                    <div class="relative w-full md:w-64">
+                        <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="searchInput" onkeyup="app.renderAll()" placeholder="Buscar detalle..." class="w-full bg-white dark:bg-darkcard text-sm font-bold text-slate-700 dark:text-slate-200 pl-11 pr-4 py-3 rounded-2xl outline-none border border-slate-200 dark:border-slate-800 focus:border-blue-500 dark:focus:border-blue-400 transition-colors shadow-sm">
+                    </div>
+                </div>
+            </div>
+            
+            <div id="listHistory" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- JS Injection -->
+            </div>
+        </div>
+
+        <!-- TAB: SETTINGS -->
+        <div id="view-settings" class="app-view hidden space-y-6">
+            <h2 class="font-black text-2xl text-slate-900 dark:text-white mb-6 tracking-tight">ConfiguraciÃ³n del Sistema</h2>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Preferences -->
+                <div class="bg-white dark:bg-darkcard p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 space-y-8 transition-colors duration-300">
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-lg"><i class="ph-duotone ph-sliders text-blue-500 text-2xl"></i> ParÃ¡metros</h3>
+                        
+                        <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 block mb-2">Tarifa Base por Hora (Bs.)</label>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 flex-1 focus-within:border-blue-500 transition-all">
+                                <input type="number" step="0.5" id="configRate" class="w-full bg-transparent text-lg font-black text-slate-900 dark:text-white px-3 outline-none">
+                            </div>
+                            <button onclick="app.saveSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 sm:py-0 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95">Guardar</button>
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-200 dark:border-slate-800">
+
+                    <div>
+                        <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 block mb-2">Meta Financiera Mensual (Bs.)</label>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-3 ml-1">Define cuÃ¡nto esperas ganar para rastrear tu progreso.</p>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 flex-1 focus-within:border-green-500 transition-all">
+                                <input type="number" step="100" id="configGoal" class="w-full bg-transparent text-lg font-black text-slate-900 dark:text-white px-3 outline-none">
+                            </div>
+                            <button onclick="app.saveSettings()" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 sm:py-0 rounded-2xl font-bold transition-all shadow-lg shadow-green-500/20 active:scale-95">Guardar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database -->
+                <div class="bg-white dark:bg-darkcard p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-300">
+                    <h3 class="font-extrabold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-lg"><i class="ph-duotone ph-database text-indigo-500 text-2xl"></i> Base de Datos</h3>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">Toda la informaciÃ³n se almacena localmente en tu dispositivo. AsegÃºrate de exportar tus datos regularmente.</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-auto">
+                        <button onclick="app.exportData()" class="flex flex-col items-center justify-center gap-3 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 p-6 rounded-[1.5rem] font-black text-xs border border-indigo-200 dark:border-indigo-500/30 transition-all active:scale-95">
+                            <i class="ph-duotone ph-download-simple text-4xl"></i> Exportar JSON
+                        </button>
+                        <label class="flex flex-col items-center justify-center gap-3 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 p-6 rounded-[1.5rem] font-black text-xs border border-slate-200 dark:border-slate-700 transition-all active:scale-95 cursor-pointer">
+                            <i class="ph-duotone ph-upload-simple text-4xl"></i> Importar JSON
+                            <input type="file" accept=".json" class="hidden" onchange="app.importData(event)">
+                        </label>
+                    </div>
+                    
+                    <hr class="border-slate-200 dark:border-slate-800 my-8">
+
+                    <button onclick="app.clearAllData()" class="w-full flex justify-center items-center gap-2 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 py-4 rounded-2xl text-sm font-black transition-all border border-red-100 dark:border-red-500/20 active:scale-95">
+                        <i class="ph-fill ph-warning-circle text-xl"></i> RESTABLECER SISTEMA
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/90 dark:bg-darkcard/90 backdrop-blur-xl border-t border-slate-200/50 dark:border-slate-800/50 flex justify-around items-end pb-safe pt-2 px-2 z-50 shadow-[0_-15px_40px_rgba(0,0,0,0.05)] transition-colors duration-300">
+        <button onclick="app.switchTab('dashboard')" id="nav-mobile-dashboard" class="nav-btn-mobile flex flex-col items-center p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 w-16 group transition-colors active">
+            <i class="ph-fill ph-squares-four text-[26px] mb-1 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:scale-110 transition-transform"></i>
+            <span class="text-[10px] font-bold group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400">Inicio</span>
+        </button>
+        <button onclick="app.switchTab('analytics')" id="nav-mobile-analytics" class="nav-btn-mobile flex flex-col items-center p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 w-16 group transition-colors">
+            <i class="ph-fill ph-chart-pie-slice text-[26px] mb-1 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:scale-110 transition-transform"></i>
+            <span class="text-[10px] font-bold group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400">Datos</span>
+        </button>
+        <button onclick="app.switchTab('register')" id="nav-mobile-register" class="nav-btn-mobile flex flex-col items-center p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 w-16 group transition-colors relative z-10">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-3.5 -mt-10 shadow-lg shadow-blue-600/40 border-[4px] border-white dark:border-darkcard group-[.active]:scale-110 group-[.active]:-translate-y-1 transition-all">
+                <i class="ph-bold ph-plus text-xl drop-shadow-sm"></i>
+            </div>
+            <span class="text-[10px] font-bold group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 mt-1">Nuevo</span>
+        </button>
+        <button onclick="app.switchTab('history')" id="nav-mobile-history" class="nav-btn-mobile flex flex-col items-center p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 w-16 group transition-colors">
+            <i class="ph-fill ph-list-dashes text-[26px] mb-1 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:scale-110 transition-transform"></i>
+            <span class="text-[10px] font-bold group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400">Historial</span>
+        </button>
+        <button onclick="app.switchTab('settings')" id="nav-mobile-settings" class="nav-btn-mobile flex flex-col items-center p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 w-16 group transition-colors">
+            <i class="ph-fill ph-gear text-[26px] mb-1 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:scale-110 transition-transform"></i>
+            <span class="text-[10px] font-bold group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400">Ajustes</span>
+        </button>
+    </nav>
+
+    <!-- EDIT MODAL -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm z-[100] hidden flex-col justify-end md:justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-darkcard rounded-t-[2rem] md:rounded-[2rem] shadow-2xl w-full max-w-md mx-auto p-6 md:p-8 transform translate-y-full md:translate-y-10 transition-transform duration-300 relative border border-slate-200 dark:border-slate-800" id="editModalContent">
+            
+            <div class="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-6 md:hidden"></div>
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-black text-slate-900 dark:text-white tracking-tight" id="editModalTitle">Editar</h3>
+                <button onclick="app.closeEditModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors p-2.5 rounded-full">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+            
+            <div id="editFormContainer" class="space-y-5 max-h-[60vh] md:max-h-auto overflow-y-auto pb-4 hide-scrollbar">
+                <!-- Injected Fields -->
+            </div>
+            
+            <div class="mt-6 flex gap-3 pb-safe md:pb-0">
+                <button onclick="app.closeEditModal()" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-4 rounded-2xl transition-colors">Cancelar</button>
+                <button onclick="app.saveEdit()" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 active:scale-95 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/30 transition-all">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS CONTAINER -->
+    <div id="toast-container" class="fixed bottom-24 md:bottom-6 right-0 left-0 md:left-auto md:right-6 flex flex-col gap-3 px-4 md:px-0 pointer-events-none items-center md:items-end"></div>
+
+    <script>
+/**
+ * Aziel Enterprise 3.0
+ * Senior Developer Edition - Full Architecture Rewrite
+ */
+
+const AppConfig = {
+    DB_KEY: 'aziel_enterprise_db',
+    RATE_KEY: 'aziel_enterprise_rate',
+    GOAL_KEY: 'aziel_enterprise_goal',
+    THEME_KEY: 'aziel_theme'
+};
+
+class AzielApp {
+    constructor() {
+        this.db = [];
+        this.currentRate = 8.0;
+        this.monthlyGoal = 2000;
+        this.editingId = null;
+        this.barChartInstance = null;
+        this.donutChartInstance = null;
+        this.isDark = false;
+    }
+
+    init() {
+        try {
+            this.loadData();
+            this.setupDefaults();
+            this.initTheme();
+            this.bindEvents();
+            this.renderAll();
+        } catch (error) {
+            console.error("Critical error in init:", error);
+            alert("Error al iniciar el sistema: " + error.message);
+        }
+    }
+
+    loadData() {
+        try {
+            const stored = localStorage.getItem(AppConfig.DB_KEY);
+            if (stored) {
+                this.db = JSON.parse(stored);
+                if (!Array.isArray(this.db)) this.db = [];
+            }
+            
+            const storedRate = localStorage.getItem(AppConfig.RATE_KEY);
+            if (storedRate) this.currentRate = parseFloat(storedRate);
+            
+            const storedGoal = localStorage.getItem(AppConfig.GOAL_KEY);
+            if (storedGoal) this.monthlyGoal = parseFloat(storedGoal);
+        } catch (error) {
+            console.warn('El almacenamiento local estÃ¡ restringido o fallÃ³.', error);
+            this.db = [];
+        }
+        
+        const configRate = document.getElementById('configRate');
+        const configGoal = document.getElementById('configGoal');
+        if (configRate) configRate.value = this.currentRate;
+        if (configGoal) configGoal.value = this.monthlyGoal;
+    }
+
+    setupDefaults() {
+        const d = new Date();
+        const toYMD = (date) => {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        };
+        
+        const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+        const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        
+        const fStart = document.getElementById('filterStart');
+        const fEnd = document.getElementById('filterEnd');
+        const iDate = document.getElementById('inputDate');
+        const aDate = document.getElementById('advDate');
+        
+        if(fStart) fStart.value = toYMD(startOfMonth);
+        if(fEnd) fEnd.value = toYMD(endOfMonth);
+        if(iDate) iDate.value = toYMD(d);
+        if(aDate) aDate.value = toYMD(d);
+    }
+
+    initTheme() {
+        this.isDark = document.documentElement.classList.contains('dark');
+        this.updateThemeIcons();
+    }
+
+    toggleTheme() {
+        this.isDark = !this.isDark;
+        if (this.isDark) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem(AppConfig.THEME_KEY, 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem(AppConfig.THEME_KEY, 'light');
+        }
+        this.updateThemeIcons();
+        this.renderCharts(); // Re-render charts for dark mode colors
+    }
+
+    updateThemeIcons() {
+        const icons = [document.getElementById('desktop-theme-icon'), document.getElementById('mobile-theme-icon')];
+        icons.forEach(icon => {
+            if (icon) {
+                icon.className = this.isDark ? 'ph-duotone ph-sun text-xl text-amber-400' : 'ph-duotone ph-moon-stars text-xl';
+            }
+        });
+    }
+
+    bindEvents() {
+        // Any global event listeners can be attached here
+    }
+
+    // --- Toast System (Microinteractions) ---
+    showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        
+        const colors = {
+            success: 'bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800',
+            error: 'bg-red-50 dark:bg-red-900/40 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800',
+            info: 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+        };
+        
+        const icons = {
+            success: 'ph-check-circle',
+            error: 'ph-warning-circle',
+            info: 'ph-info'
+        };
+
+        toast.className = `toast flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg border backdrop-blur-md font-bold text-sm pointer-events-auto ${colors[type]}`;
+        toast.innerHTML = `<i class="ph-fill ${icons[type]} text-xl"></i> ${message}`;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.remove(), 400);
+        }, 3000);
+    }
+
+    // --- Navigation ---
+    switchTab(tabId) {
+        document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
+        document.querySelectorAll('.nav-btn-mobile').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.nav-btn-desktop').forEach(n => n.classList.remove('active'));
+        
+        const view = document.getElementById(`view-${tabId}`);
+        if(view) view.classList.remove('hidden');
+        
+        const mobileBtn = document.getElementById(`nav-mobile-${tabId}`);
+        const desktopBtn = document.getElementById(`nav-desktop-${tabId}`);
+        
+        if(mobileBtn) mobileBtn.classList.add('active');
+        if(desktopBtn) desktopBtn.classList.add('active');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.renderAll();
+    }
+
+    // --- Date Quick Filters ---
+    setQuickFilter(type) {
+        const curr = new Date();
+        let start, end;
+        if(type === 'week') {
+            const first = curr.getDate() - curr.getDay() + 1;
+            const last = first + 6;
+            start = new Date(curr.setDate(first)).toISOString().split('T')[0];
+            end = new Date(curr.setDate(last)).toISOString().split('T')[0];
+        } else if(type === 'month') {
+            start = new Date(curr.getFullYear(), curr.getMonth(), 1).toISOString().split('T')[0];
+            end = new Date(curr.getFullYear(), curr.getMonth() + 1, 0).toISOString().split('T')[0];
+        }
+        document.getElementById('filterStart').value = start;
+        document.getElementById('filterEnd').value = end;
+        this.renderAll();
+    }
+
+    getFilteredData() {
+        const s = document.getElementById('filterStart').value;
+        const e = document.getElementById('filterEnd').value;
+        if(!s || !e) return [];
+        
+        const startDate = new Date(s);
+        const endDate = new Date(e);
+        endDate.setHours(23,59,59);
+        
+        return this.db.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate >= startDate && itemDate <= endDate;
+        });
+    }
+
+    // --- Rendering Core ---
+    renderAll() {
+        const data = this.getFilteredData();
+        let earned = 0, advances = 0, hours = 0;
+        
+        // Calculate totals
+        data.forEach(item => {
+            if(item.type === 'Turn') {
+                earned += item.hours * this.currentRate;
+                hours += item.hours;
+            } else {
+                advances += item.amount;
+            }
+        });
+
+        const totalNet = earned - advances;
+
+        // Dashboard Basic Updates
+        document.getElementById('lblRate').innerText = `${this.currentRate.toFixed(2)} Bs.`;
+        document.getElementById('lblEarned').innerText = `${earned.toFixed(2)} Bs.`;
+        document.getElementById('lblAdvances').innerText = `${advances.toFixed(2)} Bs.`;
+        document.getElementById('lblTotal').innerText = `${totalNet.toFixed(2)} Bs.`;
+        document.getElementById('lblHours').innerText = `${hours.toFixed(1)} h`;
+
+        // Financial Goal Logic
+        document.getElementById('lblGoalTarget').innerText = this.monthlyGoal.toFixed(2);
+        document.getElementById('lblGoalEarned').innerText = earned.toFixed(2);
+        const percent = Math.min((earned / this.monthlyGoal) * 100, 100) || 0;
+        document.getElementById('lblGoalPercent').innerText = `${percent.toFixed(1)}%`;
+        document.getElementById('goalProgressBar').style.width = `${percent}%`;
+
+        this.renderInsights(data);
+        this.renderHistory(data);
+        this.renderMiniHistory();
+        this.renderCharts(data);
+    }
+
+    renderInsights(data) {
+        // Calculate best day & average daily
+        const days = {};
+        let totalDays = 0;
+        
+        data.forEach(d => {
+            if(!days[d.date]) { days[d.date] = 0; totalDays++; }
+            if(d.type === 'Turn') days[d.date] += (d.hours * this.currentRate);
+        });
+
+        let bestDay = 'N/A';
+        let maxVal = 0;
+        let sumEarned = 0;
+
+        for(const [date, val] of Object.entries(days)) {
+            sumEarned += val;
+            if(val > maxVal) { maxVal = val; bestDay = date; }
+        }
+
+        const avg = totalDays > 0 ? (sumEarned / totalDays).toFixed(2) : '0.00';
+        
+        if (bestDay !== 'N/A') {
+            const dateObj = new Date(bestDay + 'T00:00:00');
+            bestDay = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year:'numeric' }) + ` (${maxVal.toFixed(2)} Bs)`;
+        }
+
+        document.getElementById('lblBestDay').innerText = bestDay;
+        document.getElementById('lblAvgDaily').innerText = `${avg} Bs/dÃ­a`;
+    }
+
+    renderHistory(data) {
+        const listHistory = document.getElementById('listHistory');
+        if(!listHistory) return;
+        
+        listHistory.innerHTML = '';
+        const searchInput = document.getElementById('searchInput');
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+        // Sort desc
+        const sorted = [...data].sort((a,b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
+        
+        // Filter by search
+        const filtered = sorted.filter(item => {
+            const txt = (item.detail || item.note || '').toLowerCase();
+            return txt.includes(searchTerm) || item.date.includes(searchTerm);
+        });
+
+        filtered.forEach(item => {
+            const isTurn = item.type === 'Turn';
+            const dateObj = new Date(item.date + 'T00:00:00');
+            const dateNice = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year:'numeric' });
+            
+            let cardHtml = '';
+            if(isTurn) {
+                const itemEarned = item.hours * this.currentRate;
+                cardHtml = `
+                <div class="bg-white dark:bg-darkcard p-5 rounded-[1.5rem] shadow-sm border border-slate-200 dark:border-slate-800 relative hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md transition-all group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-[1rem] bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                                <i class="ph-duotone ph-clock-user text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-extrabold text-slate-900 dark:text-white text-sm">Turno</h4>
+                                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">${dateNice}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <h4 class="font-black text-green-600 dark:text-green-400 text-lg">+${itemEarned.toFixed(2)} Bs.</h4>
+                            <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400">${item.hours.toFixed(2)} hrs</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 mt-3">
+                        <p class="text-sm text-slate-700 dark:text-slate-300 font-semibold">${item.timeIn} a ${item.timeOut} <span class="text-slate-400 dark:text-slate-500 font-medium text-xs ml-1">(${item.note})</span></p>
+                    </div>
+                    <div class="flex gap-2 justify-end mt-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+                        <button onclick="app.openEdit(${item.id})" class="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 px-4 py-2 rounded-xl text-xs font-bold transition-colors">Editar</button>
+                        <button onclick="app.deleteItem(${item.id})" class="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 px-4 py-2 rounded-xl text-xs font-bold transition-colors">Eliminar</button>
+                    </div>
+                </div>`;
+            } else {
+                cardHtml = `
+                <div class="bg-white dark:bg-darkcard p-5 rounded-[1.5rem] shadow-sm border border-slate-200 dark:border-slate-800 relative hover:border-orange-300 dark:hover:border-orange-500 hover:shadow-md transition-all group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-[1rem] bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                                <i class="ph-duotone ph-hand-coins text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-extrabold text-slate-900 dark:text-white text-sm">Adelanto</h4>
+                                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">${dateNice}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <h4 class="font-black text-red-600 dark:text-red-400 text-lg">-${item.amount.toFixed(2)} Bs.</h4>
+                            <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider">RETIRO</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 mt-3">
+                        <p class="text-sm text-slate-700 dark:text-slate-300 font-medium">${item.note || item.detail}</p>
+                    </div>
+                    <div class="flex gap-2 justify-end mt-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+                        <button onclick="app.openEdit(${item.id})" class="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 px-4 py-2 rounded-xl text-xs font-bold transition-colors">Editar</button>
+                        <button onclick="app.deleteItem(${item.id})" class="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 px-4 py-2 rounded-xl text-xs font-bold transition-colors">Eliminar</button>
+                    </div>
+                </div>`;
+            }
+            listHistory.innerHTML += cardHtml;
+        });
+
+        if(filtered.length === 0) {
+            listHistory.innerHTML = `
+            <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-16 bg-white dark:bg-darkcard rounded-[2rem] border-2 border-slate-100 dark:border-slate-800 border-dashed">
+                <div class="w-20 h-20 bg-slate-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="ph-duotone ph-folder-open text-4xl text-slate-400 dark:text-slate-500"></i>
+                </div>
+                <p class="text-sm font-extrabold text-slate-500 dark:text-slate-400">No se encontraron registros.</p>
+            </div>`;
+        }
+    }
+
+    renderMiniHistory() {
+        const miniHistory = document.getElementById('miniHistory');
+        if(!miniHistory) return;
+        miniHistory.innerHTML = '';
+        
+        const latest = [...this.db].sort((a,b) => b.id - a.id).slice(0, 3);
+        
+        latest.forEach(item => {
+            const isTurn = item.type === 'Turn';
+            const dateObj = new Date(item.date + 'T00:00:00');
+            const dateNice = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+            
+            let subText = isTurn 
+                ? `<span class="text-slate-700 dark:text-slate-300 font-semibold">${item.timeIn} - ${item.timeOut}</span>` 
+                : `<span class="text-slate-700 dark:text-slate-300 font-semibold">${item.note || item.detail}</span>`;
+            
+            let html = `
+            <div class="bg-white dark:bg-darkcard p-4 rounded-[1.5rem] shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-4 truncate">
+                    <div class="shrink-0 w-10 h-10 rounded-xl ${isTurn ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600' : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600'} flex items-center justify-center border border-slate-100 dark:border-slate-800">
+                        <i class="ph-duotone ${isTurn ? 'ph-clock-user' : 'ph-hand-coins'} text-xl"></i>
+                    </div>
+                    <div class="truncate">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-extrabold text-slate-900 dark:text-white text-sm">${isTurn ? 'Turno' : 'Adelanto'}</h4>
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">${dateNice}</span>
+                        </div>
+                        <p class="text-xs truncate mt-0.5">${subText}</p>
+                    </div>
+                </div>
+                <div class="text-right shrink-0">
+                    <h4 class="font-black text-base ${isTurn ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">${isTurn ? '+' : '-'}${isTurn ? (item.hours*this.currentRate).toFixed(2) : item.amount.toFixed(2)}</h4>
+                </div>
+            </div>`;
+            miniHistory.innerHTML += html;
+        });
+        
+        if(latest.length === 0) {
+            miniHistory.innerHTML = `<p class="text-sm text-center font-medium text-slate-500 dark:text-slate-400 py-6">Sin registros recientes.</p>`;
+        }
+    }
+
+    renderCharts(data) {
+        if(!data) data = this.getFilteredData();
+        
+        const ctxBar = document.getElementById('barChart');
+        const ctxDonut = document.getElementById('donutChart');
+        if(!ctxBar || !ctxDonut) return;
+        
+        if (typeof Chart === 'undefined') {
+            console.warn("Chart.js no ha cargado aÃºn.");
+            return;
+        }
+
+        try {
+            // Colors for theme
+            const gridColor = this.isDark ? '#334155' : '#e2e8f0';
+            const textColor = this.isDark ? '#94a3b8' : '#64748b';
+
+            // Prepare Bar Data
+            const days = {};
+            let totalIncome = 0;
+            let totalAdvs = 0;
+
+            data.forEach(d => {
+                const parts = d.date.split('-');
+                const dayLabel = `${parts[2]}/${parts[1]}`;
+                
+                if(!days[dayLabel]) days[dayLabel] = { earned: 0, adv: 0, dateFull: d.date };
+                
+                if(d.type === 'Turn') {
+                    const e = d.hours * this.currentRate;
+                    days[dayLabel].earned += e;
+                    totalIncome += e;
+                } else {
+                    days[dayLabel].adv += d.amount;
+                    totalAdvs += d.amount;
+                }
+            });
+            
+            const sortedDays = Object.keys(days).sort((a,b) => new Date(days[a].dateFull) - new Date(days[b].dateFull));
+            const amounts = sortedDays.map(day => days[day].earned - days[day].adv);
+            
+            if(this.barChartInstance) this.barChartInstance.destroy();
+            this.barChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: sortedDays,
+                    datasets: [{
+                        label: 'Balance Diario',
+                        data: amounts,
+                        backgroundColor: amounts.map(a => a >= 0 ? '#3b82f6' : '#f97316'), // blue / orange
+                        borderRadius: 6,
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { grid: { borderDash: [4, 4], color: gridColor }, ticks: { color: textColor, font: { family: 'Inter', weight: 'bold' } } }, 
+                        x: { grid: { display: false }, ticks: { color: textColor, font: { family: 'Inter', weight: 'bold' } } } 
+                    }
+                }
+            });
+
+            // Prepare Donut Data
+            if(this.donutChartInstance) this.donutChartInstance.destroy();
+            this.donutChartInstance = new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ingresos Totales', 'Adelantos'],
+                    datasets: [{
+                        data: [totalIncome, totalAdvs],
+                        backgroundColor: ['#3b82f6', '#f97316'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        } catch (e) {
+            console.error("Error renderizando grÃ¡ficos:", e);
+        }
+    }
+
+    // --- Core Logic ---
+    calculateHours(timeIn, timeOut) {
+        const [hIn, mIn] = timeIn.split(':').map(Number);
+        const [hOut, mOut] = timeOut.split(':').map(Number);
+        let hours = (hOut + mOut/60) - (hIn + mIn/60);
+        if(hours < 0) hours += 24;
+        return hours;
+    }
+
+    saveTurn() {
+        const date = document.getElementById('inputDate').value;
+        const timeIn = document.getElementById('inputIn').value;
+        const timeOut = document.getElementById('inputOut').value;
+        const note = document.getElementById('inputNote').value || 'Turno Regular';
+        
+        if(!date || !timeIn || !timeOut) return this.showToast('Completa los campos de fecha y horas', 'error');
+        
+        let hours = this.calculateHours(timeIn, timeOut);
+        if(hours === 0) return this.showToast('El tiempo no puede ser cero', 'error');
+        
+        this.db.push({ id: Date.now(), type: 'Turn', date, timeIn, timeOut, note, detail: `${timeIn} - ${timeOut}`, hours, amount: 0 });
+        this.persist();
+        
+        this.showToast(`Turno de ${hours.toFixed(1)} hrs registrado exitosamente`, 'success');
+        document.getElementById('inputNote').value = '';
+        this.renderAll();
+    }
+
+    saveAdvance() {
+        const date = document.getElementById('advDate').value;
+        const amount = parseFloat(document.getElementById('advAmount').value);
+        const note = document.getElementById('advNote').value;
+        
+        if(!date || isNaN(amount) || amount <= 0 || !note) return this.showToast('Ingresa un monto y motivo vÃ¡lidos', 'error');
+        
+        this.db.push({ id: Date.now(), type: 'Advance', date, note, detail: note, hours: 0, amount });
+        this.persist();
+        
+        document.getElementById('advAmount').value = '';
+        document.getElementById('advNote').value = '';
+        
+        this.showToast('Adelanto registrado correctamente', 'success');
+        this.renderAll();
+    }
+
+    persist() {
+        try {
+            localStorage.setItem(AppConfig.DB_KEY, JSON.stringify(this.db));
+        } catch (e) {
+            console.error('No se pudo guardar en localStorage', e);
+            this.showToast('Error al guardar datos. Revisa el almacenamiento.', 'error');
+        }
+    }
+
+    saveSettings() {
+        const rate = parseFloat(document.getElementById('configRate').value);
+        const goal = parseFloat(document.getElementById('configGoal').value);
+        
+        if(isNaN(rate) || rate <= 0) return this.showToast('Tarifa invÃ¡lida', 'error');
+        if(isNaN(goal) || goal <= 0) return this.showToast('Meta invÃ¡lida', 'error');
+        
+        this.currentRate = rate;
+        this.monthlyGoal = goal;
+        localStorage.setItem(AppConfig.RATE_KEY, this.currentRate);
+        localStorage.setItem(AppConfig.GOAL_KEY, this.monthlyGoal);
+        
+        this.renderAll();
+        this.showToast('Configuraciones guardadas', 'success');
+    }
+
+    // --- Modal Editing ---
+    openEdit(id) {
+        const item = this.db.find(x => x.id === id);
+        if(!item) return;
+        this.editingId = id;
+        
+        const container = document.getElementById('editFormContainer');
+        const inputClass = 'w-full bg-slate-50 dark:bg-slate-800/50 text-sm font-bold text-slate-900 dark:text-white px-4 py-3 rounded-2xl outline-none border border-slate-200 dark:border-slate-700 focus:border-blue-500';
+        const labelClass = 'text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 mb-2 block mt-4';
+
+        if(item.type === 'Turn') {
+            document.getElementById('editModalTitle').innerText = 'Editar Turno';
+            container.innerHTML = `
+                <label class="${labelClass}">Fecha</label>
+                <input type="date" id="editDate" value="${item.date}" class="${inputClass} [color-scheme:light] dark:[color-scheme:dark]">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="${labelClass}">Entrada</label><input type="time" id="editTimeIn" value="${item.timeIn}" class="${inputClass} [color-scheme:light] dark:[color-scheme:dark]"></div>
+                    <div><label class="${labelClass}">Salida</label><input type="time" id="editTimeOut" value="${item.timeOut}" class="${inputClass} [color-scheme:light] dark:[color-scheme:dark]"></div>
+                </div>
+                
+                <label class="${labelClass}">Nota</label>
+                <input type="text" id="editNote" value="${item.note || ''}" class="${inputClass}">
+            `;
+        } else {
+            document.getElementById('editModalTitle').innerText = 'Editar Adelanto';
+            container.innerHTML = `
+                <label class="${labelClass}">Fecha</label>
+                <input type="date" id="editDate" value="${item.date}" class="${inputClass} [color-scheme:light] dark:[color-scheme:dark]">
+                
+                <label class="${labelClass}">Monto (Bs.)</label>
+                <input type="number" step="0.1" id="editAmount" value="${item.amount}" class="${inputClass}">
+                
+                <label class="${labelClass}">Motivo</label>
+                <input type="text" id="editNote" value="${item.note || item.detail}" class="${inputClass}">
+            `;
+        }
+
+        const modal = document.getElementById('editModal');
+        const content = document.getElementById('editModalContent');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('translate-y-full', 'md:translate-y-10');
+            content.classList.add('translate-y-0', 'md:translate-y-0');
+        }, 10);
+    }
+
+    closeEditModal() {
+        const modal = document.getElementById('editModal');
+        const content = document.getElementById('editModalContent');
+        modal.classList.add('opacity-0');
+        content.classList.remove('translate-y-0', 'md:translate-y-0');
+        content.classList.add('translate-y-full', 'md:translate-y-10');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            this.editingId = null;
+        }, 300);
+    }
+
+    saveEdit() {
+        if(!this.editingId) return;
+        const index = this.db.findIndex(x => x.id === this.editingId);
+        if(index === -1) return;
+        
+        const item = this.db[index];
+        const date = document.getElementById('editDate').value;
+        if(!date) return this.showToast('La fecha es obligatoria', 'error');
+        
+        if(item.type === 'Turn') {
+            const timeIn = document.getElementById('editTimeIn').value;
+            const timeOut = document.getElementById('editTimeOut').value;
+            const note = document.getElementById('editNote').value;
+            let hours = this.calculateHours(timeIn, timeOut);
+            this.db[index] = { ...item, date, timeIn, timeOut, note, detail: `${timeIn} - ${timeOut}`, hours };
+        } else {
+            const amount = parseFloat(document.getElementById('editAmount').value);
+            const note = document.getElementById('editNote').value;
+            if(isNaN(amount) || amount <= 0) return this.showToast('Monto invÃ¡lido', 'error');
+            this.db[index] = { ...item, date, amount, note, detail: note };
+        }
+        
+        this.persist();
+        this.renderAll();
+        this.closeEditModal();
+        this.showToast('Registro actualizado', 'success');
+    }
+
+    deleteItem(id) {
+        Swal.fire({
+            title: 'Â¿Eliminar registro?',
+            text: "Esta acciÃ³n no se puede deshacer.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            customClass: { popup: 'rounded-[2rem] font-sans dark:bg-slate-800 dark:text-white' }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.db = this.db.filter(x => x.id !== id);
+                this.persist();
+                this.renderAll();
+                this.showToast('Registro eliminado', 'info');
+            }
+        });
+    }
+
+    // --- Exports & Backup ---
+    exportData() {
+        if(this.db.length === 0) return this.showToast('No hay datos para exportar', 'error');
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.db));
+        this.triggerDownload(dataStr, `aziel_backup_${new Date().toISOString().split('T')[0]}.json`);
+    }
+
+    exportCSV() {
+        const data = this.getFilteredData();
+        if(data.length === 0) return this.showToast('No hay datos en el periodo', 'error');
+        
+        let csv = 'Fecha,Tipo,Detalle,Horas,Monto(Bs)\n';
+        data.forEach(item => {
+            const isTurn = item.type === 'Turn';
+            const detailStr = (item.note || item.detail).replace(/,/g, ''); // prevent csv break
+            csv += `${item.date},${isTurn?'Turno':'Adelanto'},${detailStr},${isTurn?item.hours:0},${isTurn?(item.hours*this.currentRate):item.amount}\n`;
+        });
+        
+        const dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+        this.triggerDownload(dataStr, `aziel_reporte_${new Date().toISOString().split('T')[0]}.csv`);
+        this.showToast('Exportando CSV...', 'success');
+    }
+
+    triggerDownload(dataStr, filename) {
+        const dl = document.createElement('a');
+        dl.setAttribute("href", dataStr);
+        dl.setAttribute("download", filename);
+        dl.click();
+    }
+
+    importData(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if(Array.isArray(imported)) {
+                    this.db = imported;
+                    this.persist(); this.renderAll();
+                    this.showToast('RestauraciÃ³n completada', 'success');
+                } else throw new Error();
+            } catch {
+                this.showToast('Formato incorrecto', 'error');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    clearAllData() {
+        Swal.fire({
+            title: 'Â¡Peligro!',
+            text: "BorrarÃ¡ TODOS los registros. Â¿Continuar?",
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'SÃ­, BORRAR TODO',
+            cancelButtonText: 'Cancelar',
+            customClass: { popup: 'rounded-[2rem] font-sans dark:bg-slate-800 dark:text-white' }
+        }).then((result) => {
+            if(result.isConfirmed) {
+                this.db = []; this.persist(); this.renderAll();
+                this.showToast('Sistema restablecido de fÃ¡brica', 'info');
+            }
+        });
+    }
+
+    // --- Enterprise WhatsApp Integration ---
+    sendWpp() {
+        const data = this.getFilteredData();
+        if(data.length === 0) return this.showToast('No hay datos en el periodo seleccionado', 'error');
+
+        const s = document.getElementById('filterStart').value;
+        const e = document.getElementById('filterEnd').value;
+        
+        let earned = 0, advances = 0, hoursTotal = 0;
+        const uniqueDays = new Set();
+        
+        data.forEach(i => { 
+            if(i.type === 'Turn') {
+                hoursTotal += i.hours; 
+                earned += i.hours * this.currentRate;
+                uniqueDays.add(i.date);
+            } else {
+                advances += i.amount;
+            }
+        });
+
+        const total = earned - advances;
+        
+        const dateStartObj = new Date(s + 'T00:00:00');
+        const dateEndObj = new Date(e + 'T00:00:00');
+        const formatOpts = { day: '2-digit', month: 'short', year: 'numeric' };
+
+        const txt = `ðŸ§¾ *REPORTE EMPRESARIAL - AZIEL 3.0* ðŸ¼\n` +
+                    `â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n` +
+                    `ðŸ“… *Periodo:* ${dateStartObj.toLocaleDateString('es-ES', formatOpts)} - ${dateEndObj.toLocaleDateString('es-ES', formatOpts)}\n\n` +
+                    `ðŸ“Š *RESUMEN DE PRODUCTIVIDAD*\n` +
+                    `â€¢ *DÃ­as Trabajados:* ${uniqueDays.size} dÃ­as\n` +
+                    `â€¢ *Total Horas:* ${hoursTotal.toFixed(2)} hrs\n` +
+                    `â€¢ *Tarifa Base:* ${this.currentRate.toFixed(2)} Bs/hr\n\n` +
+                    `ðŸ’° *BALANCE FINANCIERO*\n` +
+                    `âœ… *Monto Generado:* ${earned.toFixed(2)} Bs.\n` +
+                    `âŒ *Adelantos/Desc:* ${advances.toFixed(2)} Bs.\n` +
+                    `â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n` +
+                    `ðŸ’µ *PAGO NETO FINAL:* ${total.toFixed(2)} Bs.\n\n` +
+                    `_Generado automÃ¡ticamente vÃ­a Aziel Enterprise_`;
+                    
+        Swal.fire({
+            title: 'Distribuir Reporte',
+            text: 'Seleccione el destinatario oficial',
+            icon: 'question',
+            showCancelButton: true,
+            showDenyButton: true,
+            confirmButtonText: 'ðŸ‘©ðŸ» Melissa',
+            denyButtonText: 'ðŸ‘¨ðŸ» Maycol',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#2563eb',
+            denyButtonColor: '#16a34a',
+            cancelButtonColor: '#94a3b8',
+            customClass: { popup: 'rounded-[2rem] font-sans dark:bg-slate-800 dark:text-white' }
+        }).then((result) => {
+            let phone = '';
+            if (result.isConfirmed) phone = '59167306562'; // Melissa
+            else if (result.isDenied) phone = '59177173169'; // Maycol
+            else return;
+            
+            window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(txt)}`, '_blank');
+        });
+    }
+}
+
+// Instantiate Global App
+window.app = new AzielApp();
+
+// Ensure initialization happens immediately or after DOM parses
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        try { window.app.init(); } catch (e) { console.error("Error init:", e); }
+    });
+} else {
+    try { window.app.init(); } catch (e) { console.error("Error init:", e); }
+}
+
+</script>
+</body>
+</html>
